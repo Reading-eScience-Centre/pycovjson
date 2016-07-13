@@ -21,12 +21,12 @@ print('\n')
 
 def extract_var_data(var_names):
     #Extracts data from each variable
-    variable_list = [] #Need to implement more efficient data structure. Dict or Map? var_name as key
+    variable_dict = {} #Declaring dictionary used to store key-val pairs, var_name as key and the array as the value
     for var in var_names:
-        variable_list.append(dset.variables[var][:]) #Appending to list, [:] copies entire array
+        variable_dict[var] = dset.variables[var][:] #Adding values to dict, [:] copies entire array
         #print(var) Debug
 
-    return variable_list
+    return variable_dict
 
 
 print("dimensions", dset.variables['lat'])
