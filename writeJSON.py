@@ -9,7 +9,8 @@ import util
 
 #File Locations
 json_template_path = 'jsont_template.json'
-nc_file = 'foam_2011-01-01.nc'
+#nc_file = 'foam_2011-01-01.nc'
+nc_file = rnc.nc_file
 json_file = 'json_output_test.json'
 json_ranges = 'ranges.json'
 
@@ -32,28 +33,25 @@ def load_json(path):
 
 json_template = load_json(json_template_path)
 
-def construct_range(json_ranges,var_name):
+
+def construct_range(var_name):
 
     ranges = load_json(json_ranges)
     ranges['dataType'] = str(rnc.get_type(var_name))
     ranges['shape'] = rnc.get_shape(var_name)
 
-
-
-
-
     return ranges
 
 
+def update_domain(json_template, data):
 
-def update_coord(json_template, data):
     return 0
+
 
 
 def update_json(json_template, data, domain_type):
 
     """
-
     :param json_template:
     :param data:
     :param domain_type:
@@ -63,23 +61,23 @@ def update_json(json_template, data, domain_type):
     json_template['domain']['domainType'] = domain_type
 
     # Coordinate data
-    json_template['domain']['axes']['x']['values'] = data['lat'].tolist()
-    json_template['domain']['axes']['y']['values'] = data['lon'].tolist()
+    # json_template['domain']['axes']['x']['values'] = data['lat'].tolist()
+    # json_template['domain']['axes']['y']['values'] = data['lon'].tolist()
 
 
     #Variable data
-    # json_template['ranges'][main_var]['shape'] = rnc.get_shape(dset,main_var)
     # json_template['ranges'][main_var]['values'] = (data[main_var].ravel().tolist())[0:1]
 
     for var in var_names:
 
-        json_template['ranges'][var] = construct_range(json_ranges, var)
+        json_template['ranges'][var] = construct_range(var)
+        json_template['ranges'][var]['values'] = (data[var].ravel().tolist())[200:220] #For testing, limit dataset
 
 
     print(json.dumps(json_template, indent=4))
 
-    json_template['ranges']['SALTY']['shape'] = rnc.get_shape('SALTY')
-    json_template['ranges']['SALTY']['values'] = (data['SALTY'].ravel().tolist())[0:1]
+
+    #json_template['ranges']['SALTY']['values'] = (data['SALTY'].ravel().tolist())[0:1]
 
     # Debug
     print(json.dumps(json_template,indent=4))
