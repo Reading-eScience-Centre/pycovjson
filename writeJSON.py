@@ -4,6 +4,7 @@ import netCDF4
 import readNetCDF as rnc
 import numpy as np
 import uuid
+import util
 
 import util
 
@@ -13,6 +14,8 @@ json_template_path = 'jsont_template.json'
 nc_file = rnc.nc_file
 json_file = 'json_output_test.json'
 json_ranges = 'ranges.json'
+json_parameter ='parameter.json'
+
 
 domain_type = "Grid" # Default
 
@@ -20,8 +23,11 @@ domain_type = "Grid" # Default
 dset = rnc.load_netcdf(nc_file)
 
 # ReadNetCDF data
-rnc.extract_var_data(rnc.get_var_names(dset))
 var_names = rnc.get_var_names(dset)
+rnc.extract_var_data(var_names)
+
+#TEST - REPLACE WITH FUNCTION TO TAKE OPTIONS FROM USER
+user_opts = ['ICEC']
 
 print(rnc.get_var_names(dset))
 
@@ -42,6 +48,11 @@ def construct_range(var_name):
 
     return ranges
 
+def construct_parameters(var_name):
+    parameters = load_json(json_parameter)
+    #parameters[var_name]['description'] = rnc.get_long_name(var_name)
+    return parameters
+
 
 def update_domain(json_template, data):
 
@@ -49,7 +60,7 @@ def update_domain(json_template, data):
 
 
 
-def update_json(json_template, data, domain_type):
+def update_json(json_template, data, domain_type, user_opts):
 
     """
     :param json_template:
@@ -57,38 +68,37 @@ def update_json(json_template, data, domain_type):
     :param domain_type:
     :return:
     """
-    main_var = 'ICEC'
+
     json_template['domain']['domainType'] = domain_type
 
     # Coordinate data
-    # json_template['domain']['axes']['x']['values'] = data['lat'].tolist()
-    # json_template['domain']['axes']['y']['values'] = data['lon'].tolist()
+    json_template['domain']['axes']['x']['values'] = (data['lon'].tolist())
+    json_template['domain']['axes']['y']['values'] = (data['lat'].tolist())
 
 
     #Variable data
     # json_template['ranges'][main_var]['values'] = (data[main_var].ravel().tolist())[0:1]
 
-    for var in var_names:
+    for var in user_opts:
 
         json_template['ranges'][var] = construct_range(var)
-        json_template['ranges'][var]['values'] = (data[var].ravel().tolist())[200:220] #For testing, limit dataset
+        json_template['ranges'][var]['values'] = (data[var].ravel().tolist()) #For testing, limit dataset
 
+        json_template['parameters'][var] = construct_parameters(var)
+        json_template['parameters'][var]['description'] = rnc.get_long_name(var)
 
-    print(json.dumps(json_template, indent=4))
-
-
-    #json_template['ranges']['SALTY']['values'] = (data['SALTY'].ravel().tolist())[0:1]
 
     # Debug
-    print(json.dumps(json_template,indent=4))
+    #print(json.dumps(json_template,indent=4))
 
-    json_template['domain']['axes']['z']['values'] = [5]
-
-    return json.dumps(json_template,indent=4)
+    return json_template
 
 
-def save_json():
-    return 0
+def save_json(obj, path, **kw):
+    with open(path, 'w') as fp:
+        jsonstr = json.dumps(obj, fp, cls=CustomEncoder, **kw)
+        fp.write(jsonstr)
+
 
 
 # From http://stackoverflow.com/a/25935321
@@ -118,20 +128,22 @@ class CustomEncoder(json.JSONEncoder):
         return result
 
 
-
-
-
 out_file = open(json_file, "w")
 
 json.dumps(json_template,indent=4)
 
 
 # Test parameters
-data =rnc.extract_var_data(rnc.get_var_names(dset))
-update_json(json_template,rnc.extract_var_data(rnc.get_var_names(dset)), "Grid")
+var_names = rnc.get_var_names(dset)
+data = rnc.extract_var_data(var_names)
+json_obj = update_json(json_template, rnc.extract_var_data(var_names), "Grid", user_opts)
+
+save_json(json_obj,json_file, indent=4)
+
+util.save_covjson(json_obj, json_file)
 
 
-#util.save_covjson(update_json(json_template,rnc.extract_var_data(rnc.get_var_names(dset)),"Grid"),'prettyjson.json')
+# util.save_covjson(update_json(json_template,rnc.extract_var_data(rnc.get_var_names(dset)),"Grid"),'prettyjson.json')
 
 
 
