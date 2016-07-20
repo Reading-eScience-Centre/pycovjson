@@ -66,6 +66,12 @@ def get_long_name(variable):
     long_name = dset.variables[variable].name
     return long_name
 
+
+def get_units(variable):
+    units = dset.variables[variable].units
+    return units
+
+
 def get_metadata(variable):
     """
     Returns metadata for a specified variable
@@ -107,3 +113,4 @@ def group_vars(var_names):
 print(dset.variables)
 print(get_type('SALTY'))
 print(get_dimensions('SALTY'))
+print(get_long_name('SALTY'))
