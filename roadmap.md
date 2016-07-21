@@ -1,16 +1,16 @@
 ------------------- Roadmap ------------------
 
-~~1. Read variable data from NetCDF files~~ Done
+~~1. Read variable data from NetCDF files~~ <b>Done</b>
 
-~~2. Store data in dictionary~~ Done
+~~2. Store data in dictionary~~ <b>Done</b>
 
-~~3. Convert data to serializable format~~ Done
+~~3. Convert data to serializable format~~ <b>Done</b>
 
-~~4. Store data in JSON~~ Done
+~~4. Store data in JSON~~ <b>Done</b>
 
-~~5. Store data as CovJSON~~ Done
+~~5. Store data as CovJSON~~ <b>Done</b>
 
-~~6. Prettify JSON~~ Done
+~~6. Prettify JSON~~ <b>Done</b>
 
 7. Detect referencing system used by NetCDF files, and add to JSON - 2 days
 
