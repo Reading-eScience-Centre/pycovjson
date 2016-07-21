@@ -4,17 +4,17 @@
 from netCDF4 import Dataset
 
 #Define dataset
-nc_file = 'foam_2011-01-01.nc'
+ncdf_file = 'foam_2011-01-01.nc'
 
 
-def load_netcdf(nc_file):
+def load_netcdf(ncdf_file):
     try:
-        dset = Dataset(nc_file, 'r')
+        dset = Dataset(ncdf_file, 'r')
     except:
         print("An error has occured")
     return dset
 
-dset = load_netcdf(nc_file)
+dset = load_netcdf(ncdf_file)
 
 
 def get_var_names(dset):
@@ -68,6 +68,11 @@ def get_long_name(variable):
 
 
 def get_units(variable):
+    """
+    Return
+    :param variable:
+    :return: units
+    """
     units = dset.variables[variable].units
     return units
 
@@ -111,6 +116,6 @@ def group_vars(var_names):
 
 
 print(dset.variables)
-print(get_type('SALTY'))
-print(get_dimensions('SALTY'))
-print(get_long_name('SALTY'))
+# print(get_type(''))
+# print(get_dimensions('SALTY'))
+# print(get_long_name('SALTY'))
