@@ -20,7 +20,5 @@
 
 10. Support files with more than 2 dimensions - 3 days 
 
-11. Put everything into a namespace - ???
-
 
 
