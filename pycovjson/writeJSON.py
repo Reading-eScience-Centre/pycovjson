@@ -13,6 +13,7 @@ ncdf_file = rnc.ncdf_file
 json_file = 'json_output_test.json'
 json_ranges = 'data/ranges.json'
 json_parameter ='data/parameter.json'
+json_referencing ='data/referencing.json'
 
 domain_type = "Grid" # Default
 
@@ -44,7 +45,8 @@ def construct_range(var_name):
     ranges = load_json(json_ranges)
     ranges['dataType'] = str(rnc.get_type(var_name))
     ranges['shape'] = rnc.get_shape(var_name)
-
+    #Debug
+    print("Construct range ran successfully...")
     return ranges
 
 def construct_parameters(var_name):
@@ -52,7 +54,9 @@ def construct_parameters(var_name):
     #parameters[var_name]['description'] = rnc.get_long_name(var_name)
     return parameters
 
-
+def construct_referencing(var_name):
+    referencing = load_json(json_referencing)
+    return referencing
 
 def update_json(json_template, data, domain_type, user_opts):
 
@@ -66,9 +70,15 @@ def update_json(json_template, data, domain_type, user_opts):
     json_template['domain']['domainType'] = domain_type
 
     # Coordinate data
-    json_template['domain']['axes']['x']['values'] = (data['lon'].tolist())[0:10]
-    json_template['domain']['axes']['y']['values'] = (data['lat'].tolist())[0:10]
+    json_template['domain']['axes']['x']['values'] = (data['lon'].tolist())
+    json_template['domain']['axes']['y']['values'] = (data['lat'].tolist())
+    json_template['domain']['axes']['t'] = {'values': []}
+    json_template['domain']['axes']['t']['values']= rnc.convert_time('time')
 
+
+
+    # if 't' in json_template['domain']['axes']:
+    #     json_template['domain']['axes']['t']['values'] = (data[time].tolist())
 
     #Variable data
     # json_template['ranges'][main_var]['values'] = (data[main_var].ravel().tolist())[0:1]
@@ -76,22 +86,26 @@ def update_json(json_template, data, domain_type, user_opts):
     for var in user_opts:
 
         json_template['ranges'][var] = construct_range(var)
-        json_template['ranges'][var]['values'] = (data[var].ravel().tolist())[0:100] #For testing, limit dataset
+        json_template['ranges'][var]['values'] = (data[var].ravel().tolist()) #For testing, limit dataset
 
         json_template['parameters'][var] = construct_parameters(var)
         json_template['parameters'][var]['description'] = rnc.get_long_name(var)
         json_template['parameters'][var]['unit'] = rnc.get_units(var)
 
-
-    # Debug
+    #print(json.dumps(json_template, indent=4))
+    # Debugjson_template['domain']['axes']['t']
     #print(json.dumps(json_template,indent=4))
 
     return json_template
 #Adapted from https://github.com/the-iea/ecem/blob/master/preprocess/ecem/util.py - letmaik
 def save_json(obj, path, **kw):
     with open(path, 'w') as fp:
+        #Change to json.dump
+        #json.dump(obj,fp, cls=CustomEncoder, **kw)
         jsonstr = json.dumps(obj, fp, cls=CustomEncoder, **kw)
         fp.write(jsonstr)
+        #jsonstr = json.dumps(obj, cls=CustomEncoder, **kw)
+        #fp.write(jsonstr)
 
 def save_covjson(obj, path):
     # skip indentation of certain fields to make it more compact but still human readable
@@ -103,13 +117,6 @@ def save_covjson(obj, path):
         no_indent(range, 'axisNames', 'shape')
         compact(range, 'values')
     save_json(obj, path, indent=2)
-
-
-def minify_json(path):
-    with open(path, 'r') as fp:
-        jsonstr = fp.read()
-    with open(path, 'w') as fp:
-        json.dump(json.loads(jsonstr, object_pairs_hook=OrderedDict), fp, separators=(',', ':'))
 
 
 def compact(obj, *names):
