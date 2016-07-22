@@ -1,21 +1,26 @@
 #pycovjson - Utility to convert NetCDF data to CoverageJSON format.
 #Version 0.1 Riley Williams 11/07/16 - WORK IN PROGRESS
 
-from netCDF4 import Dataset
+from netCDF4 import Dataset, num2date
+import datetime
+
+
 
 #Define dataset
 ncdf_file = 'foam_2011-01-01.nc'
+#ncdf_file = 'melodies_lc-latlon.nc'
+
 
 
 def load_netcdf(ncdf_file):
     try:
         dset = Dataset(ncdf_file, 'r')
-    except:
-        print("An error has occured")
+    except Exception as e:
+        print("An error has occured", e)
     return dset
 
-dset = load_netcdf(ncdf_file)
 
+dset = load_netcdf(ncdf_file)
 
 def get_var_names(dset):
     var_names = [var for var in dset.variables]
@@ -95,6 +100,18 @@ def get_var_group(variable):
     """
     return dset.variables[variable].group()
 
+def convert_time(t_variable):
+    date_list =[]
+    times = dset.variables[t_variable][:]
+    units = dset.variables[t_variable].units
+    cal = dset.variables[t_variable].calendar
+    dates = (num2date(times[:], units=units,calendar=cal)).tolist()
+    #print('{:%Y%m%d%H}'.format(dates))
+    for date in dates:
+        date_list.append(str(date))
+
+    #date_list = [dates.stfrtime('%Y-%m-%dT:%H') for date in dates]
+    return date_list
 
 def extract_var_data(var_names):
 
@@ -119,3 +136,4 @@ print(dset.variables)
 # print(get_type(''))
 # print(get_dimensions('SALTY'))
 # print(get_long_name('SALTY'))
+#print(convert_time('time'))
