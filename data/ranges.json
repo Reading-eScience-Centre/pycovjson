@@ -1,10 +1,8 @@
-{"ranges": {
-        "var": {
+
+        {
             "type": "NdArray",
             "dataType": "",
             "axisNames": [
-                "t",
-                "z",
                 "y",
                 "x"
             ],
@@ -12,4 +10,3 @@
             "values": []
         }
 
-    }}
