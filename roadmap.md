@@ -20,5 +20,11 @@
 
 10. Support files with more than 2 dimensions - 3 days 
 
-11. Move everything into package folder
+~~11. Move everything into package folder~~
+
+12. Dynamically update referencing system - 1 day
+
+13.Tiling - 1 week
+
+14.Observed property - dynamically update 0.5 days
 
