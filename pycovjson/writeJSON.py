@@ -14,6 +14,7 @@ json_file = 'json_output_test.json'
 json_ranges = 'data/ranges.json'
 json_parameter ='data/parameter.json'
 json_referencing ='data/referencing.json'
+json_referencing3d ='data/referencing3d.json'
 
 domain_type = "Grid" # Default
 
@@ -32,7 +33,6 @@ user_opts = ['ICEC']
 print(rnc.get_var_names(dset))
 
 
-
 def load_json(path):
     with open(path, 'r') as fp:
         return json.load(fp, object_pairs_hook=OrderedDict)
@@ -49,13 +49,29 @@ def construct_range(var_name):
     print("Construct range ran successfully...")
     return ranges
 
+
 def construct_parameters(var_name):
     parameters = load_json(json_parameter)
     #parameters[var_name]['description'] = rnc.get_long_name(var_name)
     return parameters
 
+
 def construct_referencing(var_name):
-    referencing = load_json(json_referencing)
+    var_dim_length = len(rnc.get_dimensions(var_name))
+
+    if (var_dim_length ==3):
+        referencing = load_json(json_template)['domain']['referencing']
+        referencing
+        print("3d Referencing")
+
+    else:
+        referencing = load_json(json_template)['domain']['referencing']
+        referencing['components'] = ["x","y"]
+        referencing["system"]['type'] = "GeodeticCRS"
+        referencing['system']['id'] = "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+
+        print("2d Referencing")
+
     return referencing
 
 def update_json(json_template, data, domain_type, user_opts):
@@ -72,15 +88,24 @@ def update_json(json_template, data, domain_type, user_opts):
     # Coordinate data
     json_template['domain']['axes']['x']['values'] = (data['lon'].tolist())
     json_template['domain']['axes']['y']['values'] = (data['lat'].tolist())
-    json_template['domain']['axes']['t'] = {'values': []}
-    json_template['domain']['axes']['t']['values']= rnc.convert_time('time')
 
 
+    json_template['domain']['axes']['z'] = {}
+    json_template['domain']['axes']['z']['values'] = (data['depth'].tolist())
+    #print(json.dumps(json_template, indent=2))
+
+    json_template['domain']['referencing'] = construct_referencing(user_opts[0])
+    # json_template['domain']['axes']['t'] = {'values': []}
+    # json_template['domain']['axes']['t']['values']= rnc.convert_time('time')
+
+
+    # json_template['domain']['axes']['t'] = {'values': []}
+    # json_template['domain']['axes']['t']['values']= rnc.convert_time('time')
 
     # if 't' in json_template['domain']['axes']:
     #     json_template['domain']['axes']['t']['values'] = (data[time].tolist())
 
-    #Variable data
+    # Variable data
     # json_template['ranges'][main_var]['values'] = (data[main_var].ravel().tolist())[0:1]
 
     for var in user_opts:
@@ -97,7 +122,9 @@ def update_json(json_template, data, domain_type, user_opts):
     #print(json.dumps(json_template,indent=4))
 
     return json_template
-#Adapted from https://github.com/the-iea/ecem/blob/master/preprocess/ecem/util.py - letmaik
+# Adapted from https://github.com/the-iea/ecem/blob/master/preprocess/ecem/util.py - letmaik
+
+
 def save_json(obj, path, **kw):
     with open(path, 'w') as fp:
         #Change to json.dump
@@ -157,7 +184,6 @@ class CustomEncoder(json.JSONEncoder):
 
 
 out_file = open(json_file, "w")
-
 json.dumps(json_template,indent=4)
 
 
