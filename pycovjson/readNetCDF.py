@@ -3,25 +3,30 @@
 
 from netCDF4 import Dataset, num2date
 import datetime
+import numpy
 
 
 
 #Define dataset
-ncdf_file = 'foam_2011-01-01.nc'
-#ncdf_file = 'melodies_lc-latlon.nc'
+#ncdf_file = 'foam_2011-01-01.nc'
+ncdf_file = 'melodies_lc-latlon.nc'
 
 
+
+dset = ''
 
 def load_netcdf(ncdf_file):
     try:
         dset = Dataset(ncdf_file, 'r')
+        return dset
     except Exception as e:
         print("An error has occured", e)
-    return dset
+
+
+
 
 
 dset = load_netcdf(ncdf_file)
-
 def get_var_names(dset):
     var_names = [var for var in dset.variables]
     return var_names
@@ -36,7 +41,7 @@ def get_shape(variable):
     :return: shape_list - List containing shape of specified variable
     """
     shape = dset[variable].shape
-    shape_list =[]
+    shape_list = []
     print(len(shape))
 
     if len(shape) > 1:
@@ -54,7 +59,7 @@ def get_type(variable):
     :param variable: Specified
     :return: var_type
     """
-    var_type = dset.variables[variable].datatype
+    var_type = type(dset.variables[variable].datatype)
     return var_type
 
 def get_dimensions(variable):
@@ -108,7 +113,7 @@ def convert_time(t_variable):
     dates = (num2date(times[:], units=units,calendar=cal)).tolist()
     #print('{:%Y%m%d%H}'.format(dates))
     for date in dates:
-        date_list.append(str(date))
+        date_list.append(date.strftime('%Y-%m-%dT%H:%M:%SZ'))
 
     #date_list = [dates.stfrtime('%Y-%m-%dT:%H') for date in dates]
     return date_list
@@ -130,6 +135,8 @@ def group_vars(var_names):
     for var in var_names:
         get_dimensions(var)
     return 0
+
+
 
 
 print(dset.variables)
