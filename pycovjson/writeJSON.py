@@ -271,7 +271,7 @@ class SpatialReferenceSystem(ReferenceSystem):
         self.id = id
 
 
-sref = TemporalReferenceSystem()
+
 
 out_file = open(json_file, "w")
 json.dumps(json_template, indent=4)
