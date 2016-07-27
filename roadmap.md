@@ -18,7 +18,7 @@
 
 9. Allow user selection of required variables - 3 days
 
-10. Support files with more than 2 dimensions - 3 days 
+~~~[10. Support files with more than 2 dimensions - 3 days 
 
 ~~11. Move everything into package folder~~
 
