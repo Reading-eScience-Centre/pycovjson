@@ -2,18 +2,31 @@
 #Version 0.1 Riley Williams 11/07/16 - WORK IN PROGRESS
 
 from netCDF4 import Dataset, num2date
+import netCDF4 as nc
 import datetime
 import numpy
 
 
 
 #Define dataset
-#ncdf_file = 'foam_2011-01-01.nc'
-ncdf_file = 'melodies_lc-latlon.nc'
+# ncdf_file = 'foam_2011-01-01.nc'
 
 
+file_dict = {}
+file_dict[0] = 'foam_2011-01-01.nc'
+file_dict[1] ='melodies_lc-latlon.nc'
+file_dict[2] = 'simple_xy.nc'
 
 dset = ''
+
+
+def get_user_selection(file_dict):
+    print(file_dict)
+    selection = int(input("Enter the number of the file you would like to use:"))
+    return file_dict[selection]
+
+ncdf_file = get_user_selection(file_dict)
+
 
 def load_netcdf(ncdf_file):
     try:
@@ -21,9 +34,6 @@ def load_netcdf(ncdf_file):
         return dset
     except Exception as e:
         print("An error has occured", e)
-
-
-
 
 
 dset = load_netcdf(ncdf_file)
@@ -73,7 +83,7 @@ def get_dimensions(variable):
 
 
 def get_long_name(variable):
-    long_name = dset.variables[variable].name
+    long_name = dset.variables[variable].na1me
     return long_name
 
 
@@ -131,15 +141,20 @@ def extract_var_data(var_names):
     return variable_dict
 
 
+
 def group_vars(var_names):
+    dim_list =[]
     for var in var_names:
-        get_dimensions(var)
+      dim_list.append(get_dimensions(var))
+    return dim_list
+
+def get_var_dimensions():
     return 0
 
 
 
-
 print(dset.variables)
+print(group_vars(var_names))
 # print(get_type(''))
 # print(get_dimensions('SALTY'))
 # print(get_long_name('SALTY'))
