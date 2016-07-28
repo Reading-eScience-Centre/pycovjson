@@ -3,13 +3,13 @@ import os.path
 import uuid
 import time
 from collections import OrderedDict
+from abc import ABCMeta, abstractmethod
 import numpy as np
 
 import pycovjson.readNetCDF as rnc
 
-from pycovjson import util
-
 # File Locations
+
 json_template_path = 'data/jsont_template.json'
 ncdf_file = rnc.ncdf_file
 json_file = 'json_output_test.json'
@@ -23,7 +23,6 @@ domain_type = "Grid"  # Default
 PATH_DATA = os.path.join(os.path.dirname(__file__), '..', 'data')
 
 # Creating NetCDF dataset object
-
 
 dset = rnc.load_netcdf(ncdf_file)
 
@@ -39,12 +38,7 @@ for i in range(0,len(dim_list)):
 
 variable_dimensions = dict(zip(num_list,dim_list))
 
-print(dim_list)
-#variable_dimensions = {key: value for key,value in dim_list}
-user_opts = {0,'land_cover'}
-
-print(variable_dimensions)
-
+user_opts = ['land_cover']
 
 
 def load_json(path):
@@ -72,41 +66,24 @@ def construct_parameters(var_name):
 
 
 def construct_referencing(var_name):
+    """
+
+    :param var_name: name of variable
+    :return: list of referencing objects
+    """
     var_dim_length = len(rnc.get_dimensions(var_name))
 
     referencing = load_json(json_referencing)
     referencing_list = []
-    referencing_list.append(referencing[0])
-    referencing_list.append(referencing[0])
-    # print(json.dumps(referencing_list, indent=2))
-    # print(json.dumps(referencing, indent=2))
-    ref = {}
-    ref['reference'] = []
-    ref['reference'] = referencing_list
+    i = 0
+    for elem in referencing:
 
-    # referencing['referencing'] = referencing_list
-    # print(referencing_list)
+        referencing_list.append(referencing[i])
+        i +=1
+    # referencing_list.append(referencing[0])
+    # referencing_list.append(referencing[1])
 
-
-
-    # referencing[0]['system'] = "GeoTTEST"
-    # referencing[0]['components']
-
-    # if (var_dim_length ==3):
-    #     referencing = (load_json(json_template))['domain']['referencing']
-    #
-    #     print("3d Referencing")
-    #
-    # else:
-    #     referencing = load_json(json_template)['domain']['referencing']
-    #     referencing = referencing['domain']['referencing']
-    #     referencing['components'] = ["x", "y"]
-    #     referencing["system"]['type'] = "GeodeticCRS"
-    #     referencing['system']['id'] = "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
-    #
-    #     print("2d Referencing")
-
-    return referencing
+    return referencing_list
 
 
 def update_json(json_template, data, domain_type, user_opts):
@@ -124,30 +101,13 @@ def update_json(json_template, data, domain_type, user_opts):
 
     # Coordinate data
     json_template['domain']['axes']['x']['values'] = (data[longitude].tolist())
-
     json_template['domain']['axes']['y']['values'] = data[latitude].tolist()
+    #Melodies landcover dataset, latitude values flipped, use flipup to correct
     #json_template['domain']['axes']['y']['values'] = np.flipud(data['latitude']).tolist()
-
-
-
-    # json_template['domain']['axes']['z'] = {}
-    # DEPTH - ADD IN AFTER TEST
-    # json_template['domain']['axes']['z']['values'] = (data['depth'].tolist())
-    # print(json.dumps(json_template, indent=2))
 
     json_template['domain']['referencing'] = construct_referencing(user_opts[0])
     json_template['domain']['axes']['t'] = {'values': []}
     json_template['domain']['axes']['t']['values']= rnc.convert_time('time')
-
-
-    # json_template['domain']['axes']['t'] = {'values': []}
-    # json_template['domain']['axes']['t']['values']= rnc.convert_time('time')
-
-    # if 't' in json_template['domain']['axes']:
-    #     json_template['domain']['axes']['t']['values'] = (data[time].tolist())
-
-    # Variable data
-    # json_template['ranges'][main_var]['values'] = (data[main_var].ravel().tolist())[0:1]
 
     for var in user_opts:
         json_template['ranges'][var] = construct_range(var)
@@ -157,10 +117,6 @@ def update_json(json_template, data, domain_type, user_opts):
         json_template['parameters'][var]['description'] = rnc.get_long_name(var)
         json_template['parameters'][var]['unit'] = rnc.get_units(var)
 
-    # print(json.dumps(json_template, indent=4))
-    # Debugjson_template['domain']['axes']['t']
-    # print(json.dumps(json_template,indent=4))
-
     return json_template
 
 
@@ -169,14 +125,10 @@ def update_json(json_template, data, domain_type, user_opts):
 
 def save_json(obj, path, **kw):
     with open(path, 'w') as fp:
-        # Change to json.dump
-        # json.dump(obj,fp, cls=CustomEncoder, **kw)
         print("Converting....")
         start = time.clock()
         jsonstr = json.dumps(obj, fp, cls=CustomEncoder, **kw)
         fp.write(jsonstr)
-        # jsonstr = json.dumps(obj, cls=CustomEncoder, **kw)
-        # fp.write(jsonstr)
         stop = time.clock()
         print("Completed in: " ,(stop - start),"seconds.")
 
@@ -229,6 +181,7 @@ class CustomEncoder(json.JSONEncoder):
             result = result.replace('"@@%s@@"' % (k,), v)
         return result
 
+
 class Range():
     def __init__(self,rangetype, datatype, axisnames, shape, values):
         self.rangetype = rangetype
@@ -238,40 +191,40 @@ class Range():
         self.values = values
 
 
-
 class Reference():
 
-
-    def __init__(self, components):
+    def __init__(self, components,type):
         self.components = components
-
-
-
-
-class ReferenceSystem(Reference):
-    # def __init__(self, rtype, rid):
-    #     self.rtype = rtype
-    #     self.rid = rid
-
-
-    def __init__(self, type):
         self.type = type
+    __metaclass__ = ABCMeta
 
 
-
-class TemporalReferenceSystem(ReferenceSystem):
-    def __init__(self, cal):
-
+class TemporalReferenceSystem(Reference):
+    def __init__(self,components, type, cal):
         self.cal = cal
+        self.type = type
+        Reference.components = components
 
 
-
-class SpatialReferenceSystem(ReferenceSystem):
-    def __init__(self, id):
+class SpatialReferenceSystem(Reference):
+    def __init__(self, components, id):
         self.id = id
+        self.type = 'Geodetic'
+        Reference.components = components
+        
+    def set_type(self, new_type):
+        """
+
+        :type new_type: str
+        """
+        self.type = new_type
+
+ref = Reference(['t'], 'Temporal')
 
 
-
+ref = Reference()
+print(ref.type)
+print(ref.components)
 
 out_file = open(json_file, "w")
 json.dumps(json_template, indent=4)
@@ -282,4 +235,3 @@ data = rnc.extract_var_data(var_names)
 json_obj = update_json(json_template, rnc.extract_var_data(var_names), domain_type, user_opts)
 
 save_covjson(json_obj, json_file)
-print("Completed!")
