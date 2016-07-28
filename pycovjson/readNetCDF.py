@@ -82,9 +82,9 @@ def get_dimensions(variable):
     return var_dimension
 
 
-def get_long_name(variable):
-    long_name = dset.variables[variable].na1me
-    return long_name
+def get_std_name(variable):
+    std_name = dset.variables[variable].standard_name
+    return std_name
 
 
 def get_units(variable):
@@ -151,11 +151,14 @@ def group_vars(var_names):
 def get_var_dimensions():
     return 0
 
+def get_attr_names(variable):
+    return dset[variable].ncattrs()
 
 
+
+print("ATTR NAMES: ", get_attr_names('ICEC'))
 print(dset.variables)
 print(group_vars(var_names))
 # print(get_type(''))
 # print(get_dimensions('SALTY'))
-# print(get_long_name('SALTY'))
 #print(convert_time('time'))
