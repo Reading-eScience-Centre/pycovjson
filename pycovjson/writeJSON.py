@@ -38,7 +38,7 @@ for i in range(0,len(dim_list)):
 
 variable_dimensions = dict(zip(num_list,dim_list))
 
-user_opts = ['land_cover']
+user_opts = ['SALTY']
 
 
 def load_json(path):
@@ -61,6 +61,7 @@ def construct_range(var_name):
 
 def construct_parameters(var_name):
     parameters = load_json(json_parameter)
+
     # parameters[var_name]['description'] = rnc.get_long_name(var_name)
     return parameters
 
@@ -86,6 +87,8 @@ def construct_referencing(var_name):
     return referencing_list
 
 
+
+
 def update_json(json_template, data, domain_type, user_opts):
 
     """
@@ -95,8 +98,8 @@ def update_json(json_template, data, domain_type, user_opts):
     :return:
     """
 
-    longitude = 'longitude'
-    latitude = 'latitude'
+    longitude = 'lon'
+    latitude = 'lat'
     json_template['domain']['domainType'] = domain_type
 
     # Coordinate data
@@ -105,17 +108,19 @@ def update_json(json_template, data, domain_type, user_opts):
     #Melodies landcover dataset, latitude values flipped, use flipup to correct
     #json_template['domain']['axes']['y']['values'] = np.flipud(data['latitude']).tolist()
 
-    json_template['domain']['referencing'] = construct_referencing(user_opts[0])
-    json_template['domain']['axes']['t'] = {'values': []}
-    json_template['domain']['axes']['t']['values']= rnc.convert_time('time')
+    # json_template['domain']['referencing'] = construct_referencing(user_opts[0])
+    # json_template['domain']['axes']['t'] = {'values': []}
+    # json_template['domain']['axes']['t']['values']= rnc.convert_time('time')
 
     for var in user_opts:
         json_template['ranges'][var] = construct_range(var)
         json_template['ranges'][var]['values'] = (data[var].ravel().tolist())  # For testing, limit dataset
 
         json_template['parameters'][var] = construct_parameters(var)
-        json_template['parameters'][var]['description'] = rnc.get_long_name(var)
+        json_template['parameters'][var]['description'] = rnc.get_description(var)
         json_template['parameters'][var]['unit'] = rnc.get_units(var)
+        json_template['parameters'][var]['observedProperty']['id'] = 'http://vocab.nerc.ac.uk/standard_name/' + rnc.get_std_name(var)
+        json_template['parameters'][var]['observedProperty']['label']['en'] = var
 
     return json_template
 
@@ -222,9 +227,6 @@ class SpatialReferenceSystem(Reference):
 ref = Reference(['t'], 'Temporal')
 
 
-ref = Reference()
-print(ref.type)
-print(ref.components)
 
 out_file = open(json_file, "w")
 json.dumps(json_template, indent=4)
@@ -235,3 +237,6 @@ data = rnc.extract_var_data(var_names)
 json_obj = update_json(json_template, rnc.extract_var_data(var_names), domain_type, user_opts)
 
 save_covjson(json_obj, json_file)
+
+
+
