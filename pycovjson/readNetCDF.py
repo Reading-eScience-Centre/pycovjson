@@ -86,6 +86,12 @@ def get_std_name(variable):
     std_name = dset.variables[variable].standard_name
     return std_name
 
+def get_description(variable):
+    return dset.variables[variable].long_name
+
+def get_name(variable):
+    return dset.variables[variable].name
+
 
 def get_units(variable):
     """
@@ -114,6 +120,7 @@ def get_var_group(variable):
     :return: Group that specifed variable belongs to
     """
     return dset.variables[variable].group()
+
 
 def convert_time(t_variable):
     date_list =[]
@@ -156,7 +163,8 @@ def get_attr_names(variable):
 
 
 
-print("ATTR NAMES: ", get_attr_names('ICEC'))
+
+
 print(dset.variables)
 print(group_vars(var_names))
 # print(get_type(''))

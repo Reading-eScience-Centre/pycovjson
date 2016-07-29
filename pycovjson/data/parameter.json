@@ -13,9 +13,9 @@
                 }
             },
             "observedProperty": {
-                "id": "http://vocab.nerc.ac.uk/standard_name/sea_ice_area_fraction/",
+                "id": "",
                 "label": {
-                    "en": "depth"
+                    "en": ""
                 }
             }
         }

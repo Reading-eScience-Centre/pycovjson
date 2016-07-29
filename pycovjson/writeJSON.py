@@ -85,18 +85,18 @@ def construct_referencing(var_name):
     # referencing_list.append(referencing[1])
 
     return referencing_list
-
-def detect_coords():
-    '''
-    :return: Tuple containing lat and lon var names
-    '''
-    for var in dset.variables:
-        if dset.variables[var].units == 'degrees_north':
-            lat = var
-        if dset.variables[var].units == 'degrees_east':
-            lon = var
-    print("*********",lat,lon)
-    return tuple(lat,lon)
+#
+# def detect_coords():
+#     '''
+#     :return: Tuple containing lat and lon var names
+#     '''
+#     for var in dset.variables:
+#         if dset.variables[var].units == 'degrees_north':
+#             lat = var
+#         if dset.variables[var].units == 'degrees_east':
+#             lon = var
+#     print("*********",lat,lon)
+#     return tuple(lat,lon)
 
 
 
@@ -243,7 +243,6 @@ out_file = open(json_file, "w")
 json.dumps(json_template, indent=4)
 
 # Test parameters
-detect_coords()
 var_names = rnc.get_var_names(dset)
 data = rnc.extract_var_data(var_names)
 json_obj = update_json(json_template, rnc.extract_var_data(var_names), domain_type, user_opts)

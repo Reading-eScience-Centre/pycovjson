@@ -1,0 +1,16 @@
+[
+  {
+  "components": ["x", "y"],
+  "system": {
+    "type": "GeodeticCRS",
+    "id": "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+  }
+},
+  {
+      "components": ["f"],
+      "system": {
+        "type": "TemporalRS",
+        "calendar": "Gregorian"
+      }
+    }
+]
