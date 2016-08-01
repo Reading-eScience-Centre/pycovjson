@@ -1,1 +1,0 @@
-from covjson import loadCoverage

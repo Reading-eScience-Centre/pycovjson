@@ -1,7 +1,7 @@
 """Code to read CovJSON into Python objects
 """
 
-from model import Coverage, Domain
+from model.model import Coverage, Domain
 import json
 import numpy as np
 
@@ -10,12 +10,12 @@ def decode_domain(dct):
 
     # Decode the domain type
     domainType = None
-    if dct.has_key('domainType'):
+    if 'domainType' in dct:
         # TODO: check for URIs or other possibilities
         domainType = dct['domainType']
 
     # Decode the axes
-    if not dct.has_key('axes'):
+    if 'axes' not in dct:
         raise ValueError('Domain must have an "axes" property')
     axes = dct['axes']
     # Loop through each axis
@@ -34,13 +34,13 @@ def decode_ndarray(dct):
     ''' Decodes an NdArray object into a numpy array '''
 
     # Check the array of values
-    if dct.has_key('values'):
+    if 'values' in dct:
         values = dct['values']
     else:
         raise ValueError('NdArray objects must have a "values" property')
 
     # Check the "shape" property
-    if dct.has_key('shape'):
+    if 'shape' in dct:
         shape = dct['shape']
         #TODO: check that product of shape values is the same as len(values)
     elif len(values) == 1:
@@ -50,7 +50,7 @@ def decode_ndarray(dct):
         raise ValueError('NdArray objects with >1 data value must have a "shape" property')
 
     # Check the "axisNames" property
-    if dct.has_key('axisNames'):
+    if 'axisNames' in dct:
         axisNames = dct['axisNames']
     elif len(values) == 1:
         # There is only a single value
@@ -63,7 +63,7 @@ def decode_ndarray(dct):
         raise ValueError('"shape" and "axisNames" arrays must have the same length')
 
     # We create a numpy array of the appropriate type from the Python list
-    if dct.has_key('dataType'):
+    if 'dataType' in dct:
         dataType = dct['dataType']
         if dataType == 'float':
             dtype = np.dtype(float)
@@ -90,7 +90,7 @@ def decode_ndarray(dct):
 def decoder(dct):
     ''' This is passed to the json.loads() method to automatically convert certain
         json objects into Python objects '''
-    if dct.has_key('type'):
+    if 'type' in dct:
         objtype = dct['type']
         if objtype == 'NdArray':
             return decode_ndarray(dct)
