@@ -7,7 +7,6 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 
 import pycovjson.readNetCDF as rnc
-
 # File Locations
 
 json_template_path = 'data/jsont_template.json'
@@ -38,7 +37,7 @@ for i in range(0,len(dim_list)):
 
 variable_dimensions = dict(zip(num_list,dim_list))
 
-user_opts = ['SALTY']
+user_opts = ['land_cover']
 
 
 def load_json(path):
@@ -76,28 +75,13 @@ def construct_referencing(var_name):
 
     referencing = load_json(json_referencing)
     referencing_list = []
-    i = 0
-    for elem in referencing:
+    referencing_list.append(referencing[i])
 
-        referencing_list.append(referencing[i])
-        i +=1
     # referencing_list.append(referencing[0])
     # referencing_list.append(referencing[1])
 
-    return referencing_list
+    return referencing
 #
-# def detect_coords():
-#     '''
-#     :return: Tuple containing lat and lon var names
-#     '''
-#     for var in dset.variables:
-#         if dset.variables[var].units == 'degrees_north':
-#             lat = var
-#         if dset.variables[var].units == 'degrees_east':
-#             lon = var
-#     print("*********",lat,lon)
-#     return tuple(lat,lon)
-
 
 
 def update_json(json_template, data, domain_type, user_opts):
@@ -109,8 +93,8 @@ def update_json(json_template, data, domain_type, user_opts):
     :return:
     """
 
-    longitude = 'lon'
-    latitude = 'lat'
+    longitude = detect_coords(dset)[0]
+    latitude = detect_coords(dset)[1]
     json_template['domain']['domainType'] = domain_type
 
     # Coordinate data
@@ -130,7 +114,7 @@ def update_json(json_template, data, domain_type, user_opts):
         json_template['parameters'][var] = construct_parameters(var)
         json_template['parameters'][var]['description'] = rnc.get_description(var)
         json_template['parameters'][var]['unit'] = rnc.get_units(var)
-        json_template['parameters'][var]['observedProperty']['id'] = 'http://vocab.nerc.ac.uk/standard_name/' + rnc.get_std_name(var)
+        json_template['parameters'][var]['observedProperty']['id'] = 'http://vocab.nerc.ac.uk/standard_name/' + str(rnc.get_std_name(var))
         json_template['parameters'][var]['observedProperty']['label']['en'] = var
 
     return json_template
@@ -146,7 +130,7 @@ def save_json(obj, path, **kw):
         jsonstr = json.dumps(obj, fp, cls=CustomEncoder, **kw)
         fp.write(jsonstr)
         stop = time.clock()
-        print("Completed in: " ,(stop - start),"seconds.")
+        print("Completed in: ", (stop - start), "seconds.")
 
 
 def save_covjson(obj, path):
@@ -230,12 +214,28 @@ class SpatialReferenceSystem(Reference):
         
     def set_type(self, new_type):
         """
-
         :type new_type: str
         """
         self.type = new_type
 
-ref = Reference(['t'], 'Temporal')
+def set_coords(coord_list, t):
+    t = t
+    x = coord_list[0]
+    y = coord_list[1]
+    z= coord_list[2]
+    return tuple([x,y,z,t])
+
+def detect_coords(dset):
+    """
+    :return: Tuple containing lat and lon var names
+    """
+    for var in dset.variables:
+        if rnc.is_x(var): x = var
+        if rnc.is_y(var): y = var
+
+
+
+    return tuple([x,y])
 
 
 
@@ -243,6 +243,8 @@ out_file = open(json_file, "w")
 json.dumps(json_template, indent=4)
 
 # Test parameters
+
+print("Coords are: " , detect_coords(dset))
 var_names = rnc.get_var_names(dset)
 data = rnc.extract_var_data(var_names)
 json_obj = update_json(json_template, rnc.extract_var_data(var_names), domain_type, user_opts)
