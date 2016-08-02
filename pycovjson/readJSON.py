@@ -1,12 +1,12 @@
 """Test of reading CovJSON data
 """
 
-import readers.covjson
+import readers.covjson as reader
 
 if __name__ == '__main__':
     with open('test/testdata/gridcov.json', 'r') as myfile:
         data = myfile.read()
-    cov = readers.covjson.loadCoverage(data)
+    cov = reader.loadCoverage(data)
     print(cov.domain.axes['y'])
     dataset = cov.toXarray()
     print(dataset)

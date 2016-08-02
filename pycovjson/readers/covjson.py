@@ -1,7 +1,7 @@
 """Code to read CovJSON into Python objects
 """
 
-from model.model import Coverage, Domain
+from model import Coverage, Domain
 import json
 import numpy as np
 
@@ -106,4 +106,5 @@ def loadCoverage(jsonStr):
     # Could use StringIO to support streaming (using json.load()) but this requires
     # a unicode string
     dct = json.loads(jsonStr, object_hook=decoder)
+    # TODO: check type of returned JSON object to make sure it's a Coverage
     return Coverage(dct['domain'], dct['parameters'], dct['ranges'])
