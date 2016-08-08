@@ -1,4 +1,4 @@
-import numpy as np
+import numpy as np, math
 class Coverage(object):
     def __init__(self):
         self.type = 'Coverage'
@@ -86,21 +86,29 @@ class TileSet(object):
     def set_dataset(self, dataset):
         pass
 
-    def get_tiles(self, tileShape, variable):
+    def get_tiles(self, tile_shape, variable):
+        """
+        Function which returns tiles from an input array
+        :param tile_shape:
+        :param tileShape:
+        :param variable:
+        :return:
+        """
         array = self.dataset[variable][:]
         shape = array.shape
 
-        def step(b, dim, tileIndices):
+        def step(b, dim, tile_indices):
             if dim == len(array.shape):
-                yield (b, tileIndices)
+                yield (b, tile_indices)
                 return
 
-            tileCount = shape[dim] // tileShape[dim]
-            for i in range(tileCount):
-                c = b[tileShape[dim] * i:tileShape[dim] * (i + 1)]
+            tile_count = math.ceil(shape[dim] / tile_shape[dim])
+
+            for i in range(tile_count):
+                c = b[tile_shape[dim] * i:tile_shape[dim] * (i + 1)]
                 c = np.rollaxis(c, 1)
-                tileIndices[dim] = i
-                yield from step(c, dim + 1, tileIndices)
+                tile_indices[dim] = i
+                yield from step(c, dim + 1, tile_indices)
 
         yield from step(array, 0, [0] * len(shape))
 
