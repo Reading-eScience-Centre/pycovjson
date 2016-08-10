@@ -1,17 +1,50 @@
 from netCDF4 import Dataset, num2date
-
+from pycovjson.model import Coverage, Domain, Range, Parameter, Reference
+import xarray as xr
 import datetime
 import numpy
 import re
 
-class ReadNetCDF(object):
-    ncdf_file = ''
+class NetCDFReader(object):
 
-    def __init__(self, ncdf_file):
-        self.netcdf_file = ncdf_file
-        self.dataset = Dataset(self.netcdf_file, 'r')
-        self.var_names = self.get_var_names(self.dataset)
-        print(self.netcdf_file)
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.dataset = xr.open_dataset(self.file_path)
+        #self.var_names = self.get_var_names(self.dataset)
+
+
+    def read(self):
+
+        # Loads of stuff...
+        domain = self._getDomain()
+        ranges = self._getRanges()
+        params = self._getParams()
+        reference = self._getReference()
+
+        return Coverage(domain, ranges, params, reference)
+
+    def close(self):
+        self.dataset.close()
+
+    def _getDomain(self):
+        domain = Domain('Grid')
+
+        # Loads of stuff
+
+        return domain
+    def _getRanges(self):
+        range = Range()
+        return range
+    def _getParams(self):
+        params = Parameter()
+        return params
+
+
+    def _getReference(self):
+        reference = Reference()
+        return reference
+
+
 
     def get_var_names(self, dataset):
         try:
@@ -98,7 +131,7 @@ class ReadNetCDF(object):
         :return: var_type with digits stripped
         """
         try:
-            var_type = str(self.dataset.variables[variable].dtype)
+            var_type = str(self.dataset[variable].dtype)
 
             return re.sub(r'[0-9]+', '', var_type)
 
@@ -112,7 +145,7 @@ class ReadNetCDF(object):
         :return: Tuple - Array dimension of specified variable
         """
         try:
-            var_dimension = self.dataset.variables[variable].dimensions
+            var_dimension = self.dataset[variable].dims
             return var_dimension
         except:
             return None
@@ -124,7 +157,7 @@ class ReadNetCDF(object):
         :return: standard_name
         """
         try:
-            std_name = self.dataset.variables[variable].standard_name
+            std_name = self.dataset[variable].standard_name
             return std_name
         except:
             return None
@@ -136,7 +169,7 @@ class ReadNetCDF(object):
         :return: long_name
         """
         try:
-            return self.dataset.variables[variable].long_name
+            return self.dataset[variable].long_name
         except:
             return None
 
@@ -147,7 +180,7 @@ class ReadNetCDF(object):
         :return: name - string
         """
         try:
-            return self.dataset.variables[variable].name
+            return self.dataset[variable].name
         except:
             return None
 
@@ -158,7 +191,7 @@ class ReadNetCDF(object):
         :return: units
         """
         try:
-            units = self.dataset.variables[variable].units
+            units = self.dataset[variable].units
             return units
         except:
             return None
@@ -168,9 +201,9 @@ class ReadNetCDF(object):
         Returns metadata for a specified variable
 
         :param variable: Name of specified
-        :return: dset.variables[variable]
+        :return: dset[variable]
         """
-        return self.dataset.variables[variable]
+        return self.dataset[variable]
 
     def get_var_group(self,variable):
         """
@@ -178,7 +211,7 @@ class ReadNetCDF(object):
         :param variable:
         :return: Group that specifed variable belongs to
         """
-        return self.dataset.variables[variable].group()
+        return self.dataset[variable].group()
 
     def convert_time(self, t_variable):
         """
@@ -187,9 +220,9 @@ class ReadNetCDF(object):
         :return: list of datetime strings
         """
         date_list = []
-        times = self.dataset.variables[t_variable][:]
-        units = self.dataset.variables[t_variable].units
-        cal = self.dataset.variables[t_variable].calendar
+        times = self.dataset[t_variable][:]
+        units = self.dataset[t_variable].units
+        cal = self.dataset[t_variable].calendar
         dates = (num2date(times[:], units=units, calendar=cal)).tolist()
         for date in dates:
             date_list.append(date.strftime('%Y-%m-%dT%H:%M:%SZ'))
@@ -207,7 +240,7 @@ class ReadNetCDF(object):
         variable_dict = {}  # Declaring dictionary used to store key-val pairs, var_name as key and the array as the value
         try:
             for var in var_names:
-                variable_dict[var] = self.dataset.variables[var][:]
+                variable_dict[var] = self.dataset[var][:]
             return variable_dict
         except Exception as e:
             print("An Error occured:", e)
