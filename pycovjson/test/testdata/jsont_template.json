@@ -1,0 +1,36 @@
+{
+    "type": "Coverage",
+    "domain": {
+        "type": "Domain",
+        "domainType": "Grid",
+        "axes": {
+            "x": {
+                "values": [
+
+                ]
+            },
+            "y": {
+                "values": [
+                ]
+            }
+        },
+      "referencing": [{
+      "components": [],
+      "system": {
+        "type": "",
+        "id": ""
+      }
+    }
+    ]
+
+
+    },
+    "parameters": {
+
+    },
+    "ranges": {
+
+
+    }}
+
+
