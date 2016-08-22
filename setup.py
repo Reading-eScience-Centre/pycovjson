@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 # Package data
 # ------------
-_author       = 'covjson'
+_author       = 'rileywilliams'
 _authorEmail  = 'resc@reading.ac.uk'
 _classifiers  = [
     'Environment :: Console',
@@ -20,7 +20,7 @@ _classifiers  = [
 ]
 _description  = 'Create CovJSON files from common scientific data formats'
 _downloadURL  = 'http://pypi.python.org/pypi/pycovjson/'
-_requirements = ["", "",""]
+_requirements = ["xarray", "netCDF4","numpy"]
 _keywords     = ['dataset', 'coverage', 'covjson']
 _license      = 'Copyright :: University of Reading'
 _long_description    = 'A python utility library for creating CovJSON files from common scientific data formats'
@@ -28,7 +28,7 @@ _name         = 'pycovjson'
 _namespaces   = []
 _testSuite    = 'pycovjson.test'
 _url          = 'https://github.com/Reading-eScience-Centre/pycovjson'
-_version      = '1.0.0'
+_version      = '0.1.0'
 _zipSafe      = True
 
 # Setup Metadata
@@ -38,11 +38,6 @@ def _read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
 _header = '*' * len(_name) + '\n' + _name + '\n' + '*' * len(_name)
-_longDescription = '\n\n'.join([
-    _header,
-    _read('README.md')
-])
-open('doc.txt', 'w').write(_longDescription)
 
 setup(
     author=_author,
@@ -54,7 +49,7 @@ setup(
     install_requires=_requirements,
     keywords=_keywords,
     license=_license,
-    long_description=_longDescription,
+    long_description=_long_description,
     name=_name,
     namespace_packages=_namespaces,
     packages=find_packages(),
