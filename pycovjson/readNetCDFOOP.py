@@ -1,32 +1,46 @@
 from netCDF4 import Dataset, num2date
 from pycovjson.model import Coverage, Domain, Range, Parameter, Reference
 import xarray as xr
-import datetime
-import numpy
+from collections import OrderedDict
+import datetime, pandas as pd
+import numpy as np
 import re
 
 class NetCDFReader(object):
 
-    def __init__(self, file_path):
-        self.file_path = file_path
-        self.dataset = xr.open_dataset(self.file_path)
-        #self.var_names = self.get_var_names(self.dataset)
+    def __init__(self, dataset_path):
+        self.dataset_path = dataset_path
+        self.dataset = xr.open_dataset(self.dataset_path)
+        pass
 
-
-    def read(self):
+    def read(self, file_path):
 
         # Loads of stuff...
-        domain = self._getDomain()
-        ranges = self._getRanges()
-        params = self._getParams()
-        reference = self._getReference()
+        print('in read()')
 
-        return Coverage(domain, ranges, params, reference)
+        self.file_path = file_path
+        self.dataset = xr.open_dataset(self.file_path)
+        self.var_names = self.get_var_names(self.dataset)
+
+        # domain = Domain('Grid')
+        # ranges = Range('NdArray')
+        # params = Parameter()
+        # reference =Reference()
+
+        # domain = self._get_domain()
+
+        # return Coverage(domain, ranges, params, reference)
+        pass
+    def get_xarray(self, file_path):
+        self.dataset = xr.open_dataset(file_path)
+        return self.dataset
+
+
 
     def close(self):
         self.dataset.close()
 
-    def _getDomain(self):
+    def _get_domain(self):
         domain = Domain('Grid')
 
         # Loads of stuff
@@ -124,6 +138,17 @@ class NetCDFReader(object):
                     return False
         return time_var
 
+    def get_values(self,variable):
+        """
+
+        :param variable:
+        :return: variable values as ndarray
+        """
+        x = self.dataset[variable].values
+        y = np.where(np.isnan(x), None, x)
+
+        return y
+
     def get_type(self,variable):
         """
         :param dset: NetCDF dataset object
@@ -213,6 +238,28 @@ class NetCDFReader(object):
         """
         return self.dataset[variable].group()
 
+    def get_axis(self,variable):
+        try:
+            axis = self.dataset[variable].axis
+            return axis
+        except:
+            print('Error occured: Variable has no axis attribute')
+            pass
+        try:
+            axes_list = []
+            axes_dict = self.get_axes()
+            for dim in self.dataset[variable].dims:
+
+                index = (list(axes_dict.keys())[list(axes_dict.values()).index(dim)])
+                print('INDEX: ', index)
+                axes_list.append(index)
+
+            return axes_list
+        except:
+            print('Error in axes_dict')
+
+
+
     def convert_time(self, t_variable):
         """
         Formats time objects to CovJSON compliant strings
@@ -220,12 +267,18 @@ class NetCDFReader(object):
         :return: list of datetime strings
         """
         date_list = []
-        times = self.dataset[t_variable][:]
-        units = self.dataset[t_variable].units
-        cal = self.dataset[t_variable].calendar
-        dates = (num2date(times[:], units=units, calendar=cal)).tolist()
-        for date in dates:
-            date_list.append(date.strftime('%Y-%m-%dT%H:%M:%SZ'))
+        times = self.dataset[t_variable].values
+
+        units = self.dataset[t_variable].standard_name
+
+        # cal = self.dataset[t_variable].calendar
+        # dates = (num2date(times, units=units, calendar='standard')).tolist()
+        # print(dates)
+
+        for time in times:
+            time = pd.to_datetime(str(time))
+            date_list.append(time.strftime('%Y-%m-%dT%H:%M:%SZ'))
+        print(date_list)
 
         # date_list = [dates.stfrtime('%Y-%m-%dT:%H') for date in dates]
         return date_list
@@ -240,23 +293,89 @@ class NetCDFReader(object):
         variable_dict = {}  # Declaring dictionary used to store key-val pairs, var_name as key and the array as the value
         try:
             for var in var_names:
-                variable_dict[var] = self.dataset[var][:]
+                variable_dict[var] = self.dataset[var].values
             return variable_dict
         except Exception as e:
             print("An Error occured:", e)
             raise e
 
-    def group_vars(self, var_names):
-        dim_list = []
-        for var in var_names:
-            dim_list.append(self.get_dimensions(var))
-        return dim_list
 
-    def get_attr_names(self, variable):
-        try:
-            return self.dataset[variable].ncattrs()
-        except:
-            return None
+    def get_axes(self):
+
+        axes_dict = OrderedDict()
+        x_list = ['lon', 'longitude', 'LONGITUDE', 'Longitude', 'x', 'X']
+        y_list = ['lat', 'latitude', 'LATITUDE', 'Latitude', 'y', 'Y']
+        t_list = ['time', 'TIME', 't', 'T']
+        z_list = ['depth', 'DEPTH']
+        for coord in self.dataset.coords:
+            print(coord)
+            try:
+                if self.dataset[coord].axis == 'T': axes_dict['t'] = coord
+                if self.dataset[coord].axis == 'Z': axes_dict['z'] = coord
+            except:
+                pass
+            try:
+                if self.dataset[coord].units == 'degrees_north': axes_dict['y'] = coord
+                if self.dataset[coord].units == 'degrees_east': axes_dict['x'] = coord
+            except:
+                pass
+            try:
+                if self.dataset[coord].positive in ['up', 'down']: axes_dict['z'] = coord
+            except:
+                pass
+
+            # if coord in x_list or self.dataset[coord].standard_name in x_list: axes_dict['x'] = coord
+            # if coord in y_list or self.dataset[coord].standard_name in y_list: axes_dict['y'] = coord
+
+            if coord in t_list or self.dataset[coord].standard_name in t_list: axes_dict['t'] = coord
+            if coord in z_list or self.dataset[coord].standard_name in z_list: axes_dict['z'] = coord
+
+        return axes_dict
+
+
+
+    def get_x(self):
+        for elem in (self.dataset.coords):
+
+            if elem in ['lon', 'longitude', 'LONGITUDE','Longitude', 'x', 'X']:
+                return self.dataset[elem].values
+            try:
+                if self.dataset[elem].axis == 'X':
+                    return self.dataset[elem].values
+                if self.dataset[elem].standard_name in ['lon', 'longitude', 'LONGITUDE','Longitude', 'x', 'X']:
+                    return self.dataset[elem].values
+                if self.dataset[elem].units == 'degrees_east':
+                    return self.dataset[elem].values
+            except AttributeError:
+                pass
+
+
+    def get_y(self):
+
+        y_var = self.get_axes()['y']
+        return self.dataset[y_var].values
+
+    def get_t(self):
+        axis_dict = self.get_axes()
+        t_var = axis_dict['t']
+        return self.convert_time(t_var)
+
+
+    def get_z(self):
+
+        for elem in (self.dataset.coords):
+            if type(self.dataset[elem]) in ['numpy.datetime64', 'numpy.datetime32', 'datetime.datetime']:
+                return self.dataset[elem].values
+
+            try:
+                if self.dataset[elem].axis == 'Z': return self.dataset[elem].values
+
+                if self.dataset[elem].positive in ['down', 'up']: return self.dataset[elem].values
+
+            except:
+                raise AttributeError
+
+            if elem in ['z', 'Z', 'depth', 'DEPTH']: return self.dataset[elem].values
 
 
 
