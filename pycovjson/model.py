@@ -6,7 +6,7 @@ class Coverage(object):
         self.domain = domain.to_dict()
         self.range = ranges.to_dict()
         self.parameter = params.to_dict()
-        self.reference = reference.get_list()
+        self.reference = reference.to_list()
         self.type = 'Coverage'
 
     def to_dict(self):
@@ -28,25 +28,30 @@ class Domain(object):
         self.y_values = y_values
         self.z_values = z_values
         self.t_values = t_values
+        self.referencing = []
     def __str__(self):
         return 'Domain Type: ' +  self.domain_type + '\nAxes:'+  str(self.axes)
 
     def to_dict(self):
-        count = 0
         domain_dict = OrderedDict()
-        domain_dict['type'] = self.domain_type
+        domain_dict['domainType'] = self.domain_type
         domain_dict['axes'] = {}
         print(domain_dict['axes'])
-        if not self.x_values :
-            domain_dict['axes']['x'] = {'values' :  self.x_values}
-        if not self.y_values :
-            domain_dict['axes']['y']= {'values' :  self.y_values}
-        if not self.z_values :
-            domain_dict['axes']['z']= {'values' :  self.z_values}
-        if not self.t_values :
-            domain_dict['axes']['t']= {'values' :  self.t_values}
 
+        domain_dict['axes']['x'] = {'values' :  self.x_values}
 
+        domain_dict['axes']['y']= {'values' :  self.y_values}
+
+        domain_dict['axes']['t'] = {'values' : self.t_values}
+        domain_dict['axes']['z'] = {'values': self.z_values}
+        if len(self.z_values) == 0:
+            # domain_dict['axes']['z']= {'values' :  self.z_values}
+            domain_dict['axes'].pop('z', None)
+        if len(self.t_values) == 0:
+            # domain_dict['axes']['t']= {'values' :  self.t_values}
+            domain_dict['axes'].pop('t', None)
+
+        domain_dict['referencing'] = []
         return domain_dict
 
 
@@ -69,7 +74,7 @@ class Range(object):
         range_dict[self.variable_name]['axisNames'] = self.axis_names
         range_dict[self.variable_name]['shape'] = self.shape
         range_dict[self.variable_name]['values'] = self.values
-        print(range_dict)
+
         return range_dict
 
     def populate(self, data_type={}, axes= [],shape=[], values=[], variable_name=''):
@@ -85,7 +90,7 @@ class Range(object):
 
 
 class Parameter(object):
-    def __init__(self, variable_name, description , unit, symbol,symbol_type,observed_property,op_id, label_langtag='en' ):
+    def __init__(self, variable_name='', description='' , unit='', symbol='',symbol_type='',observed_property='',op_id=None, label_langtag='en' ):
         self.variable_name = variable_name
         self.param_type = 'Parameter'
         self.description = description
@@ -101,6 +106,7 @@ class Parameter(object):
         param_dict = OrderedDict()
         param_dict[self.variable_name] = {}
         param_dict[self.variable_name]['type'] = self.param_type
+        param_dict[self.variable_name]['description'] = self.description
         param_dict[self.variable_name]['unit'] ={}
         param_dict[self.variable_name]['unit']['label'] = {self.label_langtag : self.unit}
         param_dict[self.variable_name]['symbol']={}
@@ -127,20 +133,19 @@ class Reference(object):
     def get_spatial3d(self, *args):
         return self.SpatialRefrenceSystem3d(*args)
 
-    def get_list(self):
+    def to_list(self):
         item_list = []
 
         for elem in self.obj_list:
-            print('get_list')
             item_list.append(elem.to_dict())
-
+        print('Item list:', item_list)
         return item_list
 
 
 class TemporalReferenceSystem(Reference):
     def __init__(self, cal=None):
         self.type = 'TemporalRS'
-        Reference.coordinates = ['t']
+        self.coordinates = ['t']
 
         if (cal == None):
             self.cal = "Gregorian"
@@ -173,7 +178,7 @@ class SpatialReferenceSystem2d(Reference):
         ref_dict['coordinates'] = self.coordinates
         ref_dict['system'] ={}
         ref_dict['system']['type'] = self.type
-        ref_dict['system']['is'] = self.id
+        ref_dict['system']['id'] = self.id
         return ref_dict
 
 
@@ -200,11 +205,10 @@ class SpatialReferenceSystem3d(Reference):
 
 
 class TileSet(object):
-    def __init__(self, tile_shape, urlTemplate, dataset):
+    def __init__(self, tile_shape, urlTemplate):
         self.tile_shape = tile_shape #List containing shape
         self.urlTemplate = urlTemplate
-        self.dataset = dataset
-        self.shape = []
+
 
     def create_tileset(self):
         tileset = []
@@ -227,7 +231,7 @@ class TileSet(object):
 
 
         return self.urlTemplate
-    def get_tiles(self, tile_shape: object, variable: object) -> object:
+    def get_tiles(self, tile_shape: object,  array) -> object:
         """
         Function which returns tile arrays from an input array
         :param tile_shape:
@@ -235,7 +239,7 @@ class TileSet(object):
         :param variable:
         :return:
         """
-        array = self.dataset[variable][:]
+        array = array
         self.shape = array.shape
         print(self.shape)
 
