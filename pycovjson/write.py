@@ -7,19 +7,22 @@ import time, json, uuid
 
 class Writer(object):
 
-    def __init__(self, output_name: object, dataset_path: object, vars_to_write: object, range_type: object) -> object:
+    def __init__(self, output_name: object, dataset_path: object, vars_to_write: object, tiled=False, tile_shape=[] ) -> object:
         self.output_name = output_name
         self.dataset_path = dataset_path
-
+        self.tile_shape = tile_shape
         self.vars_to_write = vars_to_write
-        self.range_type = range_type
+        self.urlTemplate = 'localhost:8080/{t}.covjson'
+        self.tiled = tiled
+        if tiled:
+            self.range_type = 'TiledNdArray'
+        else: self.range_type = 'NdArray'
         self.dataset_path = dataset_path
         self.Reader = Reader(dataset_path)
         self.axis_dict = self.Reader.get_axes()
         self.axis_list = list(self.axis_dict.keys())
         self.ref_list = []
         if 't' in self.axis_list and 'z' in self.axis_list:
-            print('t in axis list')
             self.ref_list.append(TemporalReferenceSystem())
             self.ref_list.append(SpatialReferenceSystem3d())
 
@@ -28,32 +31,17 @@ class Writer(object):
             self.ref_list.append(SpatialReferenceSystem2d())
         elif 't' not in self.axis_list and 'z' not in self.axis_list:
             self.ref_list.append(SpatialReferenceSystem2d())
-        print(self.ref_list)
+
 
     def write(self):
-        # TODO  save coverage object as JSON
+
         coverage = self._construct_coverage()
         self._save_covjson(coverage, self.output_name)
         pass
 
 
     def _construct_coverage(self):
-        ranges = 'ranges'
-        params = 'parameters'
-        refs = 'referencing'
-        domain = 'domain'
-
-        # coverage[ranges] = self._construct_range()
-
-        # coverage[params] =self._construct_params()
-        # coverage[domain] = self._construct_domain()
-        # coverage[domain][refs] = self._construct_refs()
-
-        # ranges = self._construct_range()
-
         coverage = Coverage(self._construct_domain(),self._construct_range(), self._construct_params(), self._construct_refs()).to_dict()
-
-
         return coverage
 
     def _construct_domain(self):
@@ -94,18 +82,31 @@ class Writer(object):
         return params
 
     def _construct_refs(self):
-        # TODO
-        # refs = self.coverage['domain']['referencing']
+
         refs = Reference(self.ref_list)
 
         return refs
 
     def _construct_range(self):
-        # TODO add value insertion and iteration through variable list
+        # TODO iteration through variable list
         variable = self.vars_to_write[0]
 
-        ranges = 'ranges'
-        data_type = self.Reader.get_type(variable)
+        if self.tiled:
+            tile_set = TileSet(self.tile_shape, self.urlTemplate)
+            variable_type = self.Reader.get_type(variable)
+            variable_shape = self.Reader.get_shape(variable)
+            count = 0
+            for tile in tile_set.get_tiles(self.tile_shape, self.Reader.dataset[variable].values):
+                count +=1
+                range = {'ranges':Range('NdArray', data_type=variable_type, axes=tile[1], shape=variable_shape, values=tile[0].flatten().tolist()).to_dict()}
+                save_covjson_range(range, str(count) +'.json' )
+
+
+
+
+
+
+
         axes = self.Reader.get_axis(variable)
         print('Axis Shape: ', axes)
         for dim in self.Reader.dataset[variable].dims:
@@ -117,19 +118,10 @@ class Writer(object):
         values = self.Reader.get_values(variable).flatten().tolist()
         data_type = self.Reader.get_type(variable)
 
-        # populate function params def populate(self, data_type={}, axes= [],shape=[], values=[], variable_name=''):
-        # Range.populate(data_type, axes, shape,values,variable)
-        # coverage = self.coverage[ranges]
 
         range = Range(range_type='NdArray',  data_type=data_type, values=values, shape= shape, variable_name=variable, axes=axes )
 
 
-        # coverage[variable] = {}
-        # coverage[variable]['axisNames'] = self.axis_list
-        # coverage[variable]['dataType'] = self.Reader.get_type(variable)
-        # coverage[variable]['type'] = self.range_type
-        # coverage[variable]['shape'] = shape
-        # coverage[variable]['values'] = values
 
         return range
 
@@ -151,12 +143,16 @@ class Writer(object):
         for range in obj['ranges'].values():
             no_indent(range, 'axisNames', 'shape')
             compact(range, 'values')
-        save_json(obj, path, indent=2)
+        self.save_json(obj, path, indent=2)
 
-
-
-    def set_variables_to_write(self):
-        pass
+    def save_json(self, obj, path, **kw):
+        with open(path, 'w') as fp:
+            print("Converting....")
+            start = time.clock()
+            jsonstr = json.dumps(obj, fp, cls=CustomEncoder, **kw)
+            fp.write(jsonstr)
+            stop = time.clock()
+            print("Completed in: ", (stop - start), "seconds.")
 
 
 # Adapted from https://github.com/the-iea/ecem/blob/master/preprocess/ecem/util.py - letmaik
@@ -178,6 +174,12 @@ def save_covjson(obj, path):
         compact(axis, 'values')
     for ref in obj['domain']['referencing']:
         no_indent(ref, 'coordinates')
+    for range in obj['ranges'].values():
+        no_indent(range, 'axisNames', 'shape')
+        compact(range, 'values')
+    save_json(obj, path, indent=2)
+
+def save_covjson_range(obj, path):
     for range in obj['ranges'].values():
         no_indent(range, 'axisNames', 'shape')
         compact(range, 'values')
