@@ -2,30 +2,25 @@
 #Version 0.1 Riley Williams 11/07/16 - WORK IN PROGRESS
 
 from netCDF4 import Dataset, num2date
-import netCDF4 as nc
+
 import datetime
 import numpy
-
+import re
 
 
 #Define dataset
-# ncdf_file = 'foam_2011-01-01.nc'
 
-
-file_dict = {}
-file_dict[0] = 'foam_2011-01-01.nc'
-file_dict[1] ='melodies_lc-latlon.nc'
-file_dict[2] = 'simple_xy.nc'
-
-dset = ''
-
-
-def get_user_selection(file_dict):
+def get_user_selection():
+    file_dict = {}
+    file_dict[0] = 'foam_2011-01-01.nc'
+    file_dict[1] = 'melodies_lc-latlon.nc'
+    file_dict[2] = 'simple_xyz.nc'
+    file_dict[3] = 'polcoms_irish_hourly_20090320.nc'
     print(file_dict)
     selection = int(input("Enter the number of the file you would like to use:"))
     return file_dict[selection]
 
-ncdf_file = get_user_selection(file_dict)
+
 
 
 def load_netcdf(ncdf_file):
@@ -36,12 +31,16 @@ def load_netcdf(ncdf_file):
         print("An error has occured", e)
 
 
-dset = load_netcdf(ncdf_file)
-def get_var_names(dset):
-    var_names = [var for var in dset.variables]
-    return var_names
 
-var_names = get_var_names(dset)
+def get_var_names(dset):
+    try:
+        var_names = [var for var in dset.variables]
+        return var_names
+    except Exception as e:
+        print("Failed", e)
+        return None
+
+
 
 
 def get_shape(variable):
@@ -52,7 +51,6 @@ def get_shape(variable):
     """
     shape = dset[variable].shape
     shape_list = []
-    print(len(shape))
 
     if len(shape) > 1:
         for val in shape:
@@ -63,14 +61,73 @@ def get_shape(variable):
     return shape_list
 
 
+def is_y(var):
+    """
+    Detect whether or not specified variable is a y coord
+    :param var:
+    :return: Boolean value
+    """
+    y_list = ['lat', 'latitude', 'LATITUDE','Latitude', 'y']
+    if get_units(var) == 'degrees_north':
+        return True
+    elif get_name(var) in y_list:
+        return True
+    else:
+        return False
+
+
+def is_x(var):
+    """
+    Detect whether or not specified variable is an x coord
+    :param var:
+    :return: Boolean value
+    """
+    x_list = ['lon', 'longitude', 'LONGITUDE','Longitude', 'x']
+
+
+    if get_units(var) == 'degrees_east':
+
+        return True
+    if get_name(var) in x_list:
+        return True
+    if get_description(var) in x_list:
+        return True
+    else:
+        return False
+
+def has_time():
+    time_list = ['t', 'TIME', 'time', 's', 'seconds', 'Seconds',]
+    for var in var_names:
+        if (get_units(var) in time_list):return True
+        if (get_name in time_list): return True
+        if (var in time_list): return True
+        else: return False
+
+def get_time():
+    time_list = ['t', 'TIME', 'time', 's', 'seconds', 'Seconds']
+    time_dict ={}
+    for var in var_names:
+        if get_units(var) in time_list or get_name(var) in time_list:
+            time_dict[var] = True
+            if len(get_shape(var)) == 1:
+                time_var = var
+            else: return False
+    return  time_var
+
 def get_type(variable):
     """
     :param dset: NetCDF dataset object
     :param variable: Specified
-    :return: var_type
+    :return: var_type with digits stripped
     """
-    var_type = type(dset.variables[variable].datatype)
-    return var_type
+    try:
+        var_type = str(dset.variables[variable].dtype)
+
+        return re.sub(r'[0-9]+', '', var_type)
+
+    except Exception as e:
+        return None
+
 
 def get_dimensions(variable):
     """
@@ -78,19 +135,43 @@ def get_dimensions(variable):
     :param variable: Input variable
     :return: Tuple - Array dimension of specified variable
     """
-    var_dimension = dset.variables[variable].dimensions
-    return var_dimension
-
+    try:
+        var_dimension = dset.variables[variable].dimensions
+        return var_dimension
+    except:
+        return None
 
 def get_std_name(variable):
-    std_name = dset.variables[variable].standard_name
-    return std_name
+    """
 
+    :param variable: input variable
+    :return: standard_name
+    """
+    try:
+        std_name = dset.variables[variable].standard_name
+        return std_name
+    except: return None
 def get_description(variable):
-    return dset.variables[variable].long_name
+    """
+
+    :param variable: input variable
+    :return: long_name
+    """
+    try:
+        return dset.variables[variable].long_name
+    except:
+        return None
 
 def get_name(variable):
-    return dset.variables[variable].name
+    """
+
+    :param variable: input variable
+    :return: name - string
+    """
+    try:
+        return dset.variables[variable].name
+    except:
+        return None
 
 
 def get_units(variable):
@@ -99,8 +180,12 @@ def get_units(variable):
     :param variable:
     :return: units
     """
-    units = dset.variables[variable].units
-    return units
+    try:
+        units = dset.variables[variable].units
+        return units
+    except:
+        return None
+
 
 
 def get_metadata(variable):
@@ -123,12 +208,16 @@ def get_var_group(variable):
 
 
 def convert_time(t_variable):
+    """
+    Formats time objects to CovJSON compliant strings
+    :param t_variable:
+    :return: list of datetime strings
+    """
     date_list =[]
     times = dset.variables[t_variable][:]
     units = dset.variables[t_variable].units
     cal = dset.variables[t_variable].calendar
-    dates = (num2date(times[:], units=units,calendar=cal)).tolist()
-    #print('{:%Y%m%d%H}'.format(dates))
+    dates = (num2date(times[:], units=units, calendar=cal)).tolist()
     for date in dates:
         date_list.append(date.strftime('%Y-%m-%dT%H:%M:%SZ'))
 
@@ -143,9 +232,13 @@ def extract_var_data(var_names):
     :return variable_dict - Dictionary containing key-val pairs
     """
     variable_dict = {} #Declaring dictionary used to store key-val pairs, var_name as key and the array as the value
-    for var in var_names:
-        variable_dict[var] = dset.variables[var][:]
-    return variable_dict
+    try:
+        for var in var_names:
+            variable_dict[var] = dset.variables[var][:]
+        return variable_dict
+    except Exception as e:
+        print("An Error occured:", e)
+        raise e
 
 
 
@@ -155,18 +248,19 @@ def group_vars(var_names):
       dim_list.append(get_dimensions(var))
     return dim_list
 
-def get_var_dimensions():
-    return 0
 
 def get_attr_names(variable):
-    return dset[variable].ncattrs()
+    try:
+        return dset[variable].ncattrs()
+    except:
+        return None
 
 
-
-
-
-print(dset.variables)
-print(group_vars(var_names))
-# print(get_type(''))
-# print(get_dimensions('SALTY'))
-#print(convert_time('time'))
+#Main
+Debug = False
+if not Debug:
+    ncdf_file = get_user_selection()
+else:
+    ncdf_file = 'foam_2011-01-01.nc'
+dset = load_netcdf(ncdf_file)
+var_names = get_var_names(dset)

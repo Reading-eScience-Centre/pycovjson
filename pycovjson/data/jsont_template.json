@@ -3,33 +3,16 @@
     "domain": {
         "type": "Domain",
         "domainType": "Grid",
-        "axes": {
-            "x": {
-                "values": [
-
-                ]
-            },
-            "y": {
-                "values": [
-                ]
-            }
+        "axes":
         },
       "referencing": [{
-      "components": ["y","x","z"],
+      "coordinates": [],
       "system": {
-        "type": "GeodeticCRS",
-        "id": "http://www.opengis.net/def/crs/EPSG/0/4979"
+        "type": "",
+        "id": ""
       }
-    }, {
-      "components": ["t"],
-      "system": {
-        "type": "TemporalRS",
-        "calendar": "Gregorian"
-      }
-    }]
-
-
-
+    }
+    ]
 
 
     },
@@ -37,10 +20,6 @@
 
     },
     "ranges": {
-
-
-
-
 
 
     }}

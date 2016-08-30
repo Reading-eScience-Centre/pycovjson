@@ -3,9 +3,9 @@ import os.path
 import uuid
 import time
 from collections import OrderedDict
-from abc import ABCMeta, abstractmethod
+from pycovjson.model import *
 import numpy as np
-
+import pycovjson.readNetCDFOOP
 import pycovjson.readNetCDF as rnc
 # File Locations
 
@@ -31,13 +31,23 @@ rnc.extract_var_data(var_names)
 
 # TEST - REPLACE WITH FUNCTION TO TAKE OPTIONS FROM USER
 dim_list = rnc.group_vars(var_names)
-num_list =[]
-for i in range(0,len(dim_list)):
-    num_list.append(i)
+num_list =list(range(0,len(dim_list)))
 
 variable_dimensions = dict(zip(num_list,dim_list))
 
-user_opts = ['land_cover']
+
+def get_variables():
+    var_names = rnc.get_var_names(dset)
+    num_list = list(range(0,len(var_names)))
+    var_dict = dict(zip(num_list, var_names))
+    print(var_dict)
+    print(variable_dimensions)
+    choice = int(input("Enter number of variable: "))
+    return var_dict[choice]
+
+user_opts =[]
+choice = get_variables()
+user_opts.append(choice)
 
 
 def load_json(path):
@@ -48,11 +58,18 @@ def load_json(path):
 json_template = load_json(json_template_path)
 
 
-def construct_range(var_name):
+def construct_range(var_name, tiled):
     ranges = load_json(json_ranges)
     ranges['dataType'] = str(rnc.get_type(var_name))
+    if tiled:
+        ranges['type'] = 'TiledNdArray'
+    else:
+        ranges['type'] = 'NdArray'
     ranges['shape'] = rnc.get_shape(var_name)
-    ranges['axisNames'] =['y', 'x']
+    if rnc.has_time():
+        ranges['axisNames'] = ['t', 'y', 'x']
+    else:
+        ranges['axisNames'] = ['y', 'x']
     # Debug
     print("Construct range ran successfully...")
     return ranges
@@ -65,6 +82,8 @@ def construct_parameters(var_name):
     return parameters
 
 
+
+
 def construct_referencing(var_name):
     """
 
@@ -74,19 +93,44 @@ def construct_referencing(var_name):
     var_dim_length = len(rnc.get_dimensions(var_name))
 
     referencing = load_json(json_referencing)
-    referencing_list = []
-    referencing_list.append(referencing[i])
+
+    refObj = SpatialReferenceSystem2d(['x', 'y'])
+    referencing_dict = {}
+    referencing_dict['coordinates'] = refObj.coordinates
+    referencing_dict['system'] = {}
+    referencing_dict['system']['type'] = refObj.type
+    referencing_dict['system']['id'] = refObj.id
+    ref_list = [referencing_dict]
+    if rnc.has_time():
+        t_dict = {}
+        trefObj = TemporalReferenceSystem()
+        t_dict['coordinates'] = trefObj.coordinates
+        t_dict['system'] = {}
+        t_dict['system']['type'] = trefObj.type
+        t_dict['system']['calendar'] = trefObj.cal
+        ref_list.append(t_dict)
+
+    print(ref_list)
+    print('Construct Referencing ran successfuly...')
+
 
     # referencing_list.append(referencing[0])
     # referencing_list.append(referencing[1])
 
-    return referencing
-#
+    return ref_list
+
+def construct_tiles(var_name):
+    tileObj = TileSet([None, 'x', 'y'],'https://www.googledrive.com/host//')
+    tileObj.create_tileset('TEST')
+    return tileObj
 
 
-def update_json(json_template, data, domain_type, user_opts):
+
+def construct_covjson(json_template, data,  variables,domain_type="Grid", time=False, tiled=False):
 
     """
+    Create covJSON object, fill with data values
+    :rtype: object
     :param json_template:
     :param data:
     :param domain_type:
@@ -95,27 +139,63 @@ def update_json(json_template, data, domain_type, user_opts):
 
     longitude = detect_coords(dset)[0]
     latitude = detect_coords(dset)[1]
+
     json_template['domain']['domainType'] = domain_type
 
-    # Coordinate data
+    # Coordinate data x - longitude y- latitude
     json_template['domain']['axes']['x']['values'] = (data[longitude].tolist())
     json_template['domain']['axes']['y']['values'] = data[latitude].tolist()
     #Melodies landcover dataset, latitude values flipped, use flipup to correct
-    #json_template['domain']['axes']['y']['values'] = np.flipud(data['latitude']).tolist()
+    #json_template['domain']['axes']['y']['values'] = np.flipud(data[latitude]).tolist()
 
     # json_template['domain']['referencing'] = construct_referencing(user_opts[0])
-    # json_template['domain']['axes']['t'] = {'values': []}
-    # json_template['domain']['axes']['t']['values']= rnc.convert_time('time')
+    if time:
+        json_template['domain']['axes']['t'] = {'values': []}
+        json_template['domain']['axes']['t']['values']= rnc.convert_time(rnc.get_time())
+    json_template['domain']['referencing'] = construct_referencing(choice)
+    for var in variables:
 
-    for var in user_opts:
-        json_template['ranges'][var] = construct_range(var)
-        json_template['ranges'][var]['values'] = (data[var].ravel().tolist())  # For testing, limit dataset
+        if tiled:
+            tile_shape = [1, 1, 1]
+            variable = 'SALTY'
+            tiles = TileSet(tile_shape, 'localhost:8080/{t}tile.json', dset,)
+            json_template['ranges']
+            json_template['ranges'][var] = construct_range(var, tiled=True)
+            json_template['ranges'][var]['shape'] = rnc.get_shape(var)
+            json_template['ranges'][var]['tileSets'] = {}
+
+            for tile in range(len(tiles.get_array_shape())):
+                json_template['ranges'][var]['tileSets']['tileShape'] = tile_shape
+                json_template['ranges'][var]['tileSets']['urlTemplate'] = tiles.get_url_template(tile)
+
+
+            json_tile = {}
+            tile_list = list(tiles.get_tiles(tile_shape, variable))
+            for tile in tile_list:
+                json_tile = construct_range(var, tiled=False)
+                json_tile['values'] = tile
+                save_json(json_tile, 'json_tile.json')
+
+
+
+
+        else:
+            json_template['ranges']
+            json_template['ranges'][var] = construct_range(var, tiled=False)
+            json_template['ranges'][var]["values"] ={}
+            json_template['ranges'][var]['values'] =(data[var].ravel().tolist())
+
 
         json_template['parameters'][var] = construct_parameters(var)
         json_template['parameters'][var]['description'] = rnc.get_description(var)
-        json_template['parameters'][var]['unit'] = rnc.get_units(var)
-        json_template['parameters'][var]['observedProperty']['id'] = 'http://vocab.nerc.ac.uk/standard_name/' + str(rnc.get_std_name(var))
+        json_template['parameters'][var]['unit']['label']['en'] = rnc.get_units(var)
+        if rnc.get_std_name(var) != None:
+            json_template['parameters'][var]['observedProperty']['id'] = 'http://vocab.nerc.ac.uk/standard_name/' + str(rnc.get_std_name(var))
+        else:
+            json_template['parameters'][var]['observedProperty']['id'] = None
+
         json_template['parameters'][var]['observedProperty']['label']['en'] = var
+
 
     return json_template
 
@@ -138,7 +218,7 @@ def save_covjson(obj, path):
     for axis in obj['domain']['axes'].values():
         compact(axis, 'values')
     for ref in obj['domain']['referencing']:
-        no_indent(ref, 'components')
+        no_indent(ref, 'coordinates')
     for range in obj['ranges'].values():
         no_indent(range, 'axisNames', 'shape')
         compact(range, 'values')
@@ -182,41 +262,8 @@ class CustomEncoder(json.JSONEncoder):
         return result
 
 
-class Range():
-    def __init__(self,rangetype, datatype, axisnames, shape, values):
-        self.rangetype = rangetype
-        self.datatype = datatype
-        self.axisnames = axisnames
-        self.shape = shape
-        self.values = values
 
 
-class Reference():
-
-    def __init__(self, components,type):
-        self.components = components
-        self.type = type
-    __metaclass__ = ABCMeta
-
-
-class TemporalReferenceSystem(Reference):
-    def __init__(self,components, type, cal):
-        self.cal = cal
-        self.type = type
-        Reference.components = components
-
-
-class SpatialReferenceSystem(Reference):
-    def __init__(self, components, id):
-        self.id = id
-        self.type = 'Geodetic'
-        Reference.components = components
-        
-    def set_type(self, new_type):
-        """
-        :type new_type: str
-        """
-        self.type = new_type
 
 def set_coords(coord_list, t):
     t = t
@@ -245,9 +292,11 @@ json.dumps(json_template, indent=4)
 # Test parameters
 
 print("Coords are: " , detect_coords(dset))
+print(dset)
+
 var_names = rnc.get_var_names(dset)
 data = rnc.extract_var_data(var_names)
-json_obj = update_json(json_template, rnc.extract_var_data(var_names), domain_type, user_opts)
+json_obj = construct_covjson(json_template, rnc.extract_var_data(var_names),user_opts,domain_type="Grid" ,time=rnc.has_time(),tiled=True)
 
 save_covjson(json_obj, json_file)
 

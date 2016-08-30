@@ -10,7 +10,12 @@ class NetCDFReader(object):
 
     def __init__(self, dataset_path):
         self.dataset_path = dataset_path
-        self.dataset = xr.open_dataset(self.dataset_path)
+        try:
+            self.dataset = xr.open_dataset(self.dataset_path)
+        except OSError:
+            print('File not found.')
+            exit()
+
         pass
 
     def read(self, file_path):
@@ -348,6 +353,8 @@ class NetCDFReader(object):
                     return self.dataset[elem].values
             except AttributeError:
                 pass
+
+
 
 
     def get_y(self):

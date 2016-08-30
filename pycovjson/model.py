@@ -233,7 +233,7 @@ class TileSet(object):
         return self.urlTemplate
     def get_tiles(self, tile_shape: object,  array) -> object:
         """
-        Function which returns tile arrays from an input array
+        Function which yields a generator which can be leveraged to return tile arrays from an input array
         :param tile_shape:
 
         :param variable:
