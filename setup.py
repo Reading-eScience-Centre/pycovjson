@@ -12,7 +12,7 @@ _classifiers  = [
     'Intended Audience :: Science/Research',
     'Topic :: Scientific/Engineering',
     'Development Status :: 4 - Beta',
-    'License :: Copyright :: University of Reading',
+    'License :: OSI Approved :: BSD License',
     'Operating System :: OS Independent',
     'Programming Language :: Python',
     'Topic :: Internet :: WWW/HTTP',
