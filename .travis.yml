@@ -5,4 +5,23 @@ python:
   - "3.4"
   - "3.5"
 # command to run tests
+
+before_install:
+  # Python
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/miniconda3/bin:$PATH
+  - conda update --yes conda
+
+install:
+  - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
+  - source activate test
+  # we use conda to prevent compiling big packages
+  - conda install --yes numpy xarray
+  - travis_retry pip install -r dev-requirements.txt
+
+
+  - pip install netCDF4
+
 script: nosetests pycovjson/test
