@@ -116,28 +116,33 @@ class Writer(object):
             tile_set = TileSet(self.tile_shape, self.urlTemplate)
             variable_type = self.Reader.get_type(variable)
             variable_shape = self.Reader.get_shape(variable)
+            axis_names = self.axis_list
             count = 0
             for tile in tile_set.get_tiles(self.tile_shape, self.Reader.dataset[variable].values):
                 count +=1
                 range = {'ranges':Range('NdArray', data_type=variable_type, axes=tile[1], shape=variable_shape, values=tile[0].flatten().tolist()).to_dict()}
                 self.save_covjson_range(range, + str(count) +'.json' )
+            tile_set = TileSet(variable_shape, TileSet.generate_url_template(axis_names=axis_names)).create_tileset()
+            range = Range('TiledNdArray', data_type=variable_type, axes=variable_shape, tile_sets=tile_set)
+            return range
+        else:
 
-        axes = self.Reader.get_axis(variable)
-        print('Axis Shape: ', axes)
-        for dim in self.Reader.dataset[variable].dims:
-            print(dim)
-            print(self.Reader.dataset[dim].shape)
-
-
-        shape = self.Reader.get_shape(variable)
-        values = self.Reader.get_values(variable).flatten().tolist()
-        data_type = self.Reader.get_type(variable)
-
-
-        range = Range(range_type='NdArray',  data_type=data_type, values=values, shape= shape, variable_name=variable, axes=axes )
+            axes = self.Reader.get_axis(variable)
+            print('Axis Shape: ', axes)
+            for dim in self.Reader.dataset[variable].dims:
+                print(dim)
+                print(self.Reader.dataset[dim].shape)
 
 
-        return range
+            shape = self.Reader.get_shape(variable)
+            values = self.Reader.get_values(variable).flatten().tolist()
+            data_type = self.Reader.get_type(variable)
+
+
+            range = Range(range_type='NdArray',  data_type=data_type, values=values, shape= shape, variable_name=variable, axes=axes )
+
+
+            return range
 
     # Adapted from https://github.com/the-iea/ecem/blob/master/preprocess/ecem/util.py - letmaik
     def _save_json(self, obj, path, **kw):
