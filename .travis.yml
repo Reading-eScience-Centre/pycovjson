@@ -19,9 +19,11 @@ install:
   - source activate test
   # we use conda to prevent compiling big packages
   - conda install --yes numpy xarray
-  - travis_retry pip install -r dev-requirements.txt
 
 
   - pip install netCDF4
 
-script: nosetests pycovjson/test
+script:
+  - nosetests pycovjson/test
+  - python3 cli/convert.py
+
