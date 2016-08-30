@@ -20,18 +20,12 @@ def test():
 
 
 
-    coverage =  (dataset_path, 'Grid', 'NdArray')
-    coverage = Coverage()
 
-    print(coverage.coverage.domain)
-
-
-    netcdf_dataset = coverage.dataset
     tile_shape = [2, 1]
     # tileSet = TileSet(tile_shape, urlTemplate, dataset)
 
 
-    variable_names = coverage.get_var_names(netcdf_dataset)
+    variable_names = NetCDFReader(testfile).get_var_names()
     # for tile in tileSet.get_tiles(tile_shape, 'data'):
     #     print(tile, '\n')
     # variable_names = pycovjson.readNetCDFOOP.get_var_names(netcdf_dataset)
@@ -47,16 +41,8 @@ def read():
     # 1.
     reader = NetCDFReader(dataset_path)
     coverage = reader.read()
-    reader.close()
 
-    #2.
-    coverage = NetCDFReader.read(dataset_path)
 
-ref = Reference()
-
-import re
-subject = "localhost:8080/{t}tile.json"
-subject = re.sub(r"({).(})", val, subject , 0, re.IGNORECASE)
 
 
 test()
