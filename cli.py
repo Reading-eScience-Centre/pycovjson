@@ -1,4 +1,8 @@
-
+"""
+Pycovjson - Command line interface
+Author: rileywilliams
+Version: 0.1.0
+"""
 import argparse
 
 from pycovjson.write import Writer
@@ -15,9 +19,12 @@ outputfile = args.outputfile
 variable = args.variable
 tiled = args.tiled
 tile_shape = args.shape
-print(tile_shape)
-file_path = 'pycovjson/melodies_lc-latlon.nc'
-Writer(outputfile, inputfile, [variable], tiled=tiled, tile_shape=tile_shape).write()
+
+def main():
+    Writer(outputfile, inputfile, [variable], tiled=tiled, tile_shape=tile_shape).write()
+
+if __name__ == '__main__':
+    main()
 
 
 
