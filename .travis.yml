@@ -14,5 +14,5 @@ install:
 
 script:
 
-  - python3 pycovjson/cli/convert.py -i pycovjson/polcoms.nc
+  - python3 pycovjson/cli/convert.py -i pycovjson/polcoms.nc -v sst
 
