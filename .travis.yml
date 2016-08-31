@@ -9,7 +9,7 @@ python:
 install:
 
 
-  - pip install netCDF4 numpy xarray
+  - pip install numpy xarray
 
 script:
 
