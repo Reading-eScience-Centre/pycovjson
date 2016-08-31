@@ -91,8 +91,9 @@ ENV/
 
 
 # NetCDF Files
-*.nc
-/pycovjson/ncdump.py
 /pycovjson/util.py
 /writeToJSON.py
 /.swp
+/pycovjson/data/
+/pycovjson/writeJSON.py
+/pycovjson/test/testdata/jsont_template.json
