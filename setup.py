@@ -30,7 +30,7 @@ _testSuite    = 'pycovjson.test'
 _url          = 'https://github.com/Reading-eScience-Centre/pycovjson'
 _version      = '0.1.0'
 _zipSafe      = True
-_entry_points = {'console_ssripts' : ['pycovjson-cli = pycovjson.cli.convert:main']}
+_entry_points = {'console_scripts' : ['pycovjson-convert = pycovjson.cli.convert:main', 'pycovjson-viewer = pycovjson.cli.viewer:main']}
 
 # Setup Metadata
 # --------------
