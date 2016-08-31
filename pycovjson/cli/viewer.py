@@ -20,8 +20,8 @@ def main():
     inputfile = args.inputfile
     variables = args.variables
     reader = Reader(inputfile)
-    Reader(inputfile).print()
-    reader.print()
+    reader.get_xarray()
+
     if variables:
         reader.get_vars_with_long_name(inputfile)
 

@@ -12,6 +12,7 @@ class NetCDFReader(object):
         self.dataset_path = dataset_path
         try:
             self.dataset = xr.open_dataset(self.dataset_path)
+
         except OSError:
             print('File not found.')
             exit()
@@ -19,25 +20,17 @@ class NetCDFReader(object):
         pass
 
     def read(self, file_path):
-
-        # Loads of stuff...
-        print('in read()')
-
         self.file_path = file_path
         self.dataset = xr.open_dataset(self.file_path)
         self.var_names = self.get_var_names(self.dataset)
-
-        # domain = Domain('Grid')
-        # ranges = Range('NdArray')
-        # params = Parameter()
-        # reference =Reference()
-
-        # domain = self._get_domain()
-
-        # return Coverage(domain, ranges, params, reference)
         pass
-    def get_xarray(self, file_path):
-        self.dataset = xr.open_dataset(file_path)
+
+    def print(self):
+        print(self.dataset)
+        return self.dataset
+
+    def get_xarray(self):
+        self.dataset = xr.open_dataset(self.dataset_path)
         return self.dataset
 
 
@@ -72,6 +65,25 @@ class NetCDFReader(object):
         except Exception as e:
             print("Failed", e)
             return None
+    def get_long_names(self, dataset):
+        long_names = []
+        for variable in self.get_var_names(dataset):
+            try:
+                long_names.append(dataset[variable].long_name)
+            except:
+                long_names.append(dataset[variable].standard_name)
+        return long_names
+
+
+    def get_vars_with_long_name(self, dataset):
+        try:
+            long_names = self.get_long_names(dataset)
+            vars_long_names = list(zip(self.get_var_names(dataset), long_names))
+            return vars_long_names
+        except:
+            pass
+
+
 
     def get_shape(self,variable):
         """
@@ -246,6 +258,7 @@ class NetCDFReader(object):
     def get_axis(self,variable):
         try:
             axis = self.dataset[variable].axis
+            axis = list(map(str.lower, list(axis)))
             return axis
         except:
             print('Error occured: Variable has no axis attribute')
@@ -256,7 +269,7 @@ class NetCDFReader(object):
             for dim in self.dataset[variable].dims:
 
                 index = (list(axes_dict.keys())[list(axes_dict.values()).index(dim)])
-                print('INDEX: ', index)
+
                 axes_list.append(index)
 
             return axes_list
@@ -283,7 +296,7 @@ class NetCDFReader(object):
         for time in times:
             time = pd.to_datetime(str(time))
             date_list.append(time.strftime('%Y-%m-%dT%H:%M:%SZ'))
-        print(date_list)
+
 
         # date_list = [dates.stfrtime('%Y-%m-%dT:%H') for date in dates]
         return date_list
@@ -313,7 +326,6 @@ class NetCDFReader(object):
         t_list = ['time', 'TIME', 't', 'T']
         z_list = ['depth', 'DEPTH']
         for coord in self.dataset.coords:
-            print(coord)
             try:
                 if self.dataset[coord].axis == 'T': axes_dict['t'] = coord
                 if self.dataset[coord].axis == 'Z': axes_dict['z'] = coord
@@ -353,6 +365,8 @@ class NetCDFReader(object):
                     return self.dataset[elem].values
             except AttributeError:
                 pass
+
+
 
 
 

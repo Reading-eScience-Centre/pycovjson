@@ -36,7 +36,6 @@ class Domain(object):
         domain_dict = OrderedDict()
         domain_dict['domainType'] = self.domain_type
         domain_dict['axes'] = {}
-        print(domain_dict['axes'])
 
         domain_dict['axes']['x'] = {'values' :  self.x_values}
 
@@ -56,24 +55,30 @@ class Domain(object):
 
 
 class Range(object):
-    def __init__(self, range_type,data_type={}, axes= [],shape=[], values=[], variable_name=''):
+    def __init__(self, range_type,data_type={}, axes= [],shape=[], values=[], variable_name='', tile_sets = []):
         self.range_type = range_type
         self.data_type = data_type
         self.axis_names = axes
         self.shape = shape
         self.values = values
         self.variable_name = variable_name
+        self.tile_sets = tile_sets
 
 
     def to_dict(self):
         range_dict = OrderedDict()
         range_dict[self.variable_name] = {}
-        print(range_dict)
+
         range_dict[self.variable_name]['type'] = self.range_type
         range_dict[self.variable_name]['dataType'] = self.data_type
         range_dict[self.variable_name]['axisNames'] = self.axis_names
         range_dict[self.variable_name]['shape'] = self.shape
-        range_dict[self.variable_name]['values'] = self.values
+        if self.range_type == 'TiledNdArray' :
+            range_dict[self.variable_name]['tileSets'] = self.tile_sets
+
+        else:
+
+            range_dict[self.variable_name]['values'] = self.values
 
         return range_dict
 
@@ -205,10 +210,9 @@ class SpatialReferenceSystem3d(Reference):
 
 
 class TileSet(object):
-    def __init__(self, tile_shape, urlTemplate):
+    def __init__(self, tile_shape, url_template):
         self.tile_shape = tile_shape #List containing shape
-        self.urlTemplate = urlTemplate
-
+        self.url_template = url_template
 
     def create_tileset(self):
         tileset = []
@@ -219,18 +223,24 @@ class TileSet(object):
         return tileset
 
 
-    def set_dataset(self, dataset):
-        pass
-
     def get_url_template(self, val):
         self.val = val
 
         import re
-        subject = self.urlTemplate
+        subject = self.url_template
         subject = re.sub(r"({).(})", self.val, subject, 0, re.IGNORECASE)
 
+    def generate_url_template(self, axis_names):
+        axis_names = axis_names
+        if len(axis_names) == 1:
+            url_template = '{' + axis_names[0] + '}.covjson'
+        elif len(axis_names) == 2:
+            url_template = '{' + axis_names[0] + '}-{' + axis_names[1] +'}.covjson'
+        elif len(axis_names) == 3:
+            url_template = '{' + axis_names[0] + '}-{' + axis_names[1] + '}-{' + axis_names[2] + '}.covjson'
 
-        return self.urlTemplate
+
+        return url_template
     def get_tiles(self, tile_shape: object,  array) -> object:
         """
         Function which yields a generator which can be leveraged to return tile arrays from an input array
@@ -241,7 +251,7 @@ class TileSet(object):
         """
         array = array
         self.shape = array.shape
-        print(self.shape)
+        # print(self.shape)
 
         def step(b, dim, tile_indices):
             if dim == len(array.shape):

@@ -44,11 +44,11 @@ class Writer(object):
 
     def write(self):
         """
-        Writes coverageJSON object to disk
+        Writes Coverage object to disk
         """
 
         coverage = self._construct_coverage()
-        self._save_covjson(coverage, self.output_name)
+        self.save_covjson_tiled(coverage, self.output_name)
         pass
 
 
@@ -57,6 +57,7 @@ class Writer(object):
         Constructs Coverage object from constituent parts
         :return: coverage object
         """
+        print(self.tile_shape, type(self.tile_shape))
         coverage = Coverage(self._construct_domain(),self._construct_range(), self._construct_params(), self._construct_refs()).to_dict()
         return coverage
 
@@ -88,7 +89,7 @@ class Writer(object):
 
     def _construct_params(self):
         """
-        Construct parameters
+        Construct parameter object from constituent parts
         :return: Parameter object
         """
         for variable in self.vars_to_write:
@@ -96,56 +97,62 @@ class Writer(object):
             unit = self.Reader.get_units(variable)
             symbol = self.Reader.dataset[variable].units
             label = self.Reader.dataset[variable].long_name
-            params = Parameter(description=description, variable_name=variable, symbol=symbol, unit=unit,observed_property=label )
+            params = Parameter(description=description, variable_name=variable, symbol=symbol, unit=unit,observed_property=label)
 
 
         return params
 
     def _construct_refs(self):
-
+        """
+        Construct reference object
+        :return: refs
+        """
         refs = Reference(self.ref_list)
 
         return refs
 
     def _construct_range(self):
+        """
+       Construct range object
+       :return: range
+       """
         # TODO iteration through variable list
         variable = self.vars_to_write[0]
-
+        axis_names = list(map(str.lower, list(self.Reader.get_axis(variable))))
 
         if self.tiled:
-            tile_set = TileSet(self.tile_shape, self.urlTemplate)
+            # print(self.tile_shape)
+
+            tile_set_obj = TileSet(self.tile_shape, self.urlTemplate)
             variable_type = self.Reader.get_type(variable)
             variable_shape = self.Reader.get_shape(variable)
-            axis_names = self.axis_list
+            print('Variable shape:', variable_shape)
+
             count = 0
-            for tile in tile_set.get_tiles(self.tile_shape, self.Reader.dataset[variable].values):
+            for tile in tile_set_obj.get_tiles(self.tile_shape, self.Reader.dataset[variable].values):
                 count +=1
                 range = {'ranges':Range('NdArray', data_type=variable_type, axes=tile[1], shape=variable_shape, values=tile[0].flatten().tolist()).to_dict()}
-                self.save_covjson_range(range, + str(count) +'.json' )
-            tile_set = TileSet(variable_shape, TileSet.generate_url_template(axis_names=axis_names)).create_tileset()
-            range = Range('TiledNdArray', data_type=variable_type, axes=variable_shape, tile_sets=tile_set)
+                self.save_covjson_range(range, str(count) +'.json' )
+            url_template = tile_set_obj.generate_url_template(axis_names=axis_names)
+            # tileset = TileSet(variable_shape, url_template).create_tileset()
+            tileset = [{'tileShape' : [None, 173, 301], 'urlTemplate': 'http://localhost:8080/{t}.covjson'}]
+
+            range = Range('TiledNdArray', data_type=variable_type, axes=axis_names, tile_sets=tileset, shape=variable_shape)
             return range
         else:
-
-            axes = self.Reader.get_axis(variable)
-            print('Axis Shape: ', axes)
-            for dim in self.Reader.dataset[variable].dims:
-                print(dim)
-                print(self.Reader.dataset[dim].shape)
-
 
             shape = self.Reader.get_shape(variable)
             values = self.Reader.get_values(variable).flatten().tolist()
             data_type = self.Reader.get_type(variable)
-
-
-            range = Range(range_type='NdArray',  data_type=data_type, values=values, shape= shape, variable_name=variable, axes=axes )
-
+            axes = self.Reader.get_axis(variable)
+            range = Range(range_type='NdArray',  data_type=data_type, values=values, shape=shape,\
+                          variable_name=variable, axes=axis_names)
 
             return range
 
     # Adapted from https://github.com/the-iea/ecem/blob/master/preprocess/ecem/util.py - letmaik
     def _save_json(self, obj, path, **kw):
+        """Save json object to disk"""
         with open(path, 'w') as fp:
             print("Converting....")
             start = time.clock()
@@ -155,7 +162,13 @@ class Writer(object):
             print("Completed in: ", (stop - start), "seconds.")
 
     def _save_covjson(self, obj, path):
-        # skip indentation of certain fields to make it more compact but still human readable
+        """
+        Skip indentation of certain fields to make JSON more compact but still human readable
+        :param obj:
+        :param path:
+
+        """
+
         for axis in obj['domain']['axes'].values():
             self.compact(axis, 'values')
         for ref in obj['domain']['referencing']:
@@ -163,6 +176,20 @@ class Writer(object):
         for range in obj['ranges'].values():
             self.no_indent(range, 'axisNames', 'shape')
             self.compact(range, 'values')
+        self.save_json(obj, path, indent=2)
+    def save_covjson_tiled(self, obj, path):
+        """
+              Skip indentation of certain fields to make JSON more compact but still human readable
+              :param obj:
+              :param path:
+
+              """
+
+        for axis in obj['domain']['axes'].values():
+            self.compact(axis, 'values')
+        for ref in obj['domain']['referencing']:
+            self.no_indent(ref, 'coordinates')
+
         self.save_json(obj, path, indent=2)
 
     def save_json(self, obj, path, **kw):
@@ -191,9 +218,6 @@ class Writer(object):
 
 
 
-
-
-
 # From http://stackoverflow.com/a/25935321
 class Custom(object):
     def __init__(self, value, **custom_args):
@@ -202,6 +226,7 @@ class Custom(object):
 
 
 class CustomEncoder(json.JSONEncoder):
+    """Custom Json Encoder class - Allows Json to be saved using custom format (no_indent, compact)"""
     def __init__(self, *args, **kwargs):
         super(CustomEncoder, self).__init__(*args, **kwargs)
         self._replacement_map = {}
