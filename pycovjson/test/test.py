@@ -24,13 +24,14 @@ def test():
     tile_shape = [2, 1]
     # tileSet = TileSet(tile_shape, urlTemplate, dataset)
 
-
-    variable_names = NetCDFReader(testfile).get_var_names()
+    try:
+        variable_names = NetCDFReader(testfile).get_var_names()
+    except OSError:
+        print('Error: ', OSError)
     # for tile in tileSet.get_tiles(tile_shape, 'data'):
     #     print(tile, '\n')
     # variable_names = pycovjson.readNetCDFOOP.get_var_names(netcdf_dataset)
-    print(variable_names)
-    print()
+
     assert len(variable_names) > 0
 
 def read():

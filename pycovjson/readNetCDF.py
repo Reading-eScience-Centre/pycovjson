@@ -42,7 +42,6 @@ def get_var_names(dset):
 
 
 
-
 def get_shape(variable):
     """
     Get shape of specifed variable, as list
@@ -254,13 +253,13 @@ def get_attr_names(variable):
         return dset[variable].ncattrs()
     except:
         return None
+if __name__ == '__main__':
 
-
-#Main
-Debug = False
-if not Debug:
-    ncdf_file = get_user_selection()
-else:
-    ncdf_file = 'foam_2011-01-01.nc'
-dset = load_netcdf(ncdf_file)
-var_names = get_var_names(dset)
+    #Main
+    Debug = False
+    if not Debug:
+        ncdf_file = get_user_selection()
+    else:
+        ncdf_file = 'foam_2011-01-01.nc'
+    dset = load_netcdf(ncdf_file)
+    var_names = get_var_names(dset)
