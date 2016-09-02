@@ -19,11 +19,6 @@ On running the script, a CoverageJSON file will be generated.
 **pycovjson-viewer** takes up to 2 parameters: -i *name of inputfile* [*-v display variable information only*] on running will display information about the input file. To be use in conjunction with **pycovjson-convert**.
 
 
-
-
-- [ ] Todo 1
-- [x] Todo 2
-
 Examples
 --------
     bash$> pycovjson-viewer -i melodies_landcover.nc
