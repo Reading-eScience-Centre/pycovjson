@@ -39,5 +39,4 @@ print(coverage.domain)
 vars = ['temperature', 'salinity']
 
 
-
 Writer('file_name.json', coverage, vars, 'NdArray').write()

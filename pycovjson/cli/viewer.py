@@ -12,9 +12,11 @@ from pycovjson.readNetCDFOOP import NetCDFReader as Reader
 
 def main():
     parser = argparse.ArgumentParser(description='View Scientific Data files.')
-    parser.add_argument('-i', '--input', dest='inputfile', help='Name of input file', required=True)
+    parser.add_argument('-i', '--input', dest='inputfile',
+                        help='Name of input file', required=True)
 
-    parser.add_argument('-v', '--variables,', dest='variables', help='Display variables', action='store_true')
+    parser.add_argument('-v', '--variables,', dest='variables',
+                        help='Display variables', action='store_true')
 
     args = parser.parse_args()
     inputfile = args.inputfile
@@ -28,6 +30,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-

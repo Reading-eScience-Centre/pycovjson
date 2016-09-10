@@ -1,5 +1,5 @@
-#pycovjson - Utility to convert NetCDF data to CoverageJSON format.
-#Version 0.1 Riley Williams 11/07/16 - WORK IN PROGRESS
+# pycovjson - Utility to convert NetCDF data to CoverageJSON format.
+# Version 0.1 Riley Williams 11/07/16 - WORK IN PROGRESS
 
 from netCDF4 import Dataset, num2date
 
@@ -8,7 +8,7 @@ import numpy
 import re
 
 
-#Define dataset
+# Define dataset
 
 def get_user_selection():
     file_dict = {}
@@ -17,10 +17,9 @@ def get_user_selection():
     file_dict[2] = 'simple_xyz.nc'
     file_dict[3] = 'polcoms_irish_hourly_20090320.nc'
     print(file_dict)
-    selection = int(input("Enter the number of the file you would like to use:"))
+    selection = int(
+        input("Enter the number of the file you would like to use:"))
     return file_dict[selection]
-
-
 
 
 def load_netcdf(ncdf_file):
@@ -31,7 +30,6 @@ def load_netcdf(ncdf_file):
         print("An error has occured", e)
 
 
-
 def get_var_names(dset):
     try:
         var_names = [var for var in dset.variables]
@@ -39,7 +37,6 @@ def get_var_names(dset):
     except Exception as e:
         print("Failed", e)
         return None
-
 
 
 def get_shape(variable):
@@ -66,7 +63,7 @@ def is_y(var):
     :param var:
     :return: Boolean value
     """
-    y_list = ['lat', 'latitude', 'LATITUDE','Latitude', 'y']
+    y_list = ['lat', 'latitude', 'LATITUDE', 'Latitude', 'y']
     if get_units(var) == 'degrees_north':
         return True
     elif get_name(var) in y_list:
@@ -81,8 +78,7 @@ def is_x(var):
     :param var:
     :return: Boolean value
     """
-    x_list = ['lon', 'longitude', 'LONGITUDE','Longitude', 'x']
-
+    x_list = ['lon', 'longitude', 'LONGITUDE', 'Longitude', 'x']
 
     if get_units(var) == 'degrees_east':
 
@@ -94,24 +90,32 @@ def is_x(var):
     else:
         return False
 
+
 def has_time():
-    time_list = ['t', 'TIME', 'time', 's', 'seconds', 'Seconds',]
+    time_list = ['t', 'TIME', 'time', 's', 'seconds', 'Seconds', ]
     for var in var_names:
-        if (get_units(var) in time_list):return True
-        if (get_name in time_list): return True
-        if (var in time_list): return True
-        else: return False
+        if (get_units(var) in time_list):
+            return True
+        if (get_name in time_list):
+            return True
+        if (var in time_list):
+            return True
+        else:
+            return False
+
 
 def get_time():
     time_list = ['t', 'TIME', 'time', 's', 'seconds', 'Seconds']
-    time_dict ={}
+    time_dict = {}
     for var in var_names:
         if get_units(var) in time_list or get_name(var) in time_list:
             time_dict[var] = True
             if len(get_shape(var)) == 1:
                 time_var = var
-            else: return False
-    return  time_var
+            else:
+                return False
+    return time_var
+
 
 def get_type(variable):
     """
@@ -140,6 +144,7 @@ def get_dimensions(variable):
     except:
         return None
 
+
 def get_std_name(variable):
     """
 
@@ -149,7 +154,10 @@ def get_std_name(variable):
     try:
         std_name = dset.variables[variable].standard_name
         return std_name
-    except: return None
+    except:
+        return None
+
+
 def get_description(variable):
     """
 
@@ -160,6 +168,7 @@ def get_description(variable):
         return dset.variables[variable].long_name
     except:
         return None
+
 
 def get_name(variable):
     """
@@ -184,7 +193,6 @@ def get_units(variable):
         return units
     except:
         return None
-
 
 
 def get_metadata(variable):
@@ -212,7 +220,7 @@ def convert_time(t_variable):
     :param t_variable:
     :return: list of datetime strings
     """
-    date_list =[]
+    date_list = []
     times = dset.variables[t_variable][:]
     units = dset.variables[t_variable].units
     cal = dset.variables[t_variable].calendar
@@ -223,14 +231,14 @@ def convert_time(t_variable):
     #date_list = [dates.stfrtime('%Y-%m-%dT:%H') for date in dates]
     return date_list
 
-def extract_var_data(var_names):
 
+def extract_var_data(var_names):
     """
     Returns dictionary containing the values in each variable specified in the variable list
     :type var_names: object
     :return variable_dict - Dictionary containing key-val pairs
     """
-    variable_dict = {} #Declaring dictionary used to store key-val pairs, var_name as key and the array as the value
+    variable_dict = {}  # Declaring dictionary used to store key-val pairs, var_name as key and the array as the value
     try:
         for var in var_names:
             variable_dict[var] = dset.variables[var][:]
@@ -240,11 +248,10 @@ def extract_var_data(var_names):
         raise e
 
 
-
 def group_vars(var_names):
-    dim_list =[]
+    dim_list = []
     for var in var_names:
-      dim_list.append(get_dimensions(var))
+        dim_list.append(get_dimensions(var))
     return dim_list
 
 
@@ -255,7 +262,7 @@ def get_attr_names(variable):
         return None
 if __name__ == '__main__':
 
-    #Main
+    # Main
     Debug = False
     if not Debug:
         ncdf_file = get_user_selection()

@@ -3,9 +3,9 @@ from setuptools import find_packages, setup
 
 # Package data
 # ------------
-_author       = 'rileywilliams'
-_authorEmail  = 'resc@reading.ac.uk'
-_classifiers  = [
+_author = 'rileywilliams'
+_authorEmail = 'resc@reading.ac.uk'
+_classifiers = [
     'Environment :: Console',
     'Intended Audience :: Developers',
     'Intended Audience :: Information Technology',
@@ -18,22 +18,24 @@ _classifiers  = [
     'Topic :: Internet :: WWW/HTTP',
     'Topic :: Software Development :: Libraries :: Python Modules',
 ]
-_description  = 'Create CovJSON files from common scientific data formats'
-_downloadURL  = 'http://pypi.python.org/pypi/pycovjson/'
-_requirements = ["xarray", "netCDF4","numpy"]
-_keywords     = ['dataset', 'coverage', 'covjson']
-_license      = 'Copyright :: University of Reading'
-_long_description    = 'A python utility library for creating CovJSON files from common scientific data formats'
-_name         = 'pycovjson'
-_namespaces   = []
-_testSuite    = 'pycovjson.test'
-_url          = 'https://github.com/Reading-eScience-Centre/pycovjson'
-_version      = '0.1.0'
-_zipSafe      = True
-_entry_points = {'console_scripts' : ['pycovjson-convert = pycovjson.cli.convert:main', 'pycovjson-viewer = pycovjson.cli.viewer:main']}
+_description = 'Create CovJSON files from common scientific data formats'
+_downloadURL = 'http://pypi.python.org/pypi/pycovjson/'
+_requirements = ["xarray", "netCDF4", "numpy"]
+_keywords = ['dataset', 'coverage', 'covjson']
+_license = 'Copyright :: University of Reading'
+_long_description = 'A python utility library for creating CovJSON files from common scientific data formats'
+_name = 'pycovjson'
+_namespaces = []
+_testSuite = 'pycovjson.test'
+_url = 'https://github.com/Reading-eScience-Centre/pycovjson'
+_version = '0.1.0'
+_zipSafe = True
+_entry_points = {'console_scripts': [
+    'pycovjson-convert = pycovjson.cli.convert:main', 'pycovjson-viewer = pycovjson.cli.viewer:main']}
 
 # Setup Metadata
 # --------------
+
 
 def _read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()

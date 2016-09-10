@@ -1,8 +1,11 @@
-import numpy as np, math
+import numpy as np
+import math
 from collections import OrderedDict
 
+
 class Coverage(object):
-    def __init__(self,domain, ranges, params, reference):
+
+    def __init__(self, domain, ranges, params, reference):
         self.domain = domain.to_dict()
         self.range = ranges.to_dict()
         self.parameter = params.to_dict()
@@ -21,6 +24,7 @@ class Coverage(object):
 
 
 class Domain(object):
+
     def __init__(self, domain_type, x_values=[], y_values=[], z_values=[], t_values=[]):
         self.domain_type = domain_type
 
@@ -29,19 +33,20 @@ class Domain(object):
         self.z_values = z_values
         self.t_values = t_values
         self.referencing = []
+
     def __str__(self):
-        return 'Domain Type: ' +  self.domain_type + '\nAxes:'+  str(self.axes)
+        return 'Domain Type: ' + self.domain_type + '\nAxes:' + str(self.axes)
 
     def to_dict(self):
         domain_dict = OrderedDict()
         domain_dict['domainType'] = self.domain_type
         domain_dict['axes'] = {}
 
-        domain_dict['axes']['x'] = {'values' :  self.x_values}
+        domain_dict['axes']['x'] = {'values':  self.x_values}
 
-        domain_dict['axes']['y']= {'values' :  self.y_values}
+        domain_dict['axes']['y'] = {'values':  self.y_values}
 
-        domain_dict['axes']['t'] = {'values' : self.t_values}
+        domain_dict['axes']['t'] = {'values': self.t_values}
         domain_dict['axes']['z'] = {'values': self.z_values}
         if len(self.z_values) == 0:
             # domain_dict['axes']['z']= {'values' :  self.z_values}
@@ -55,7 +60,8 @@ class Domain(object):
 
 
 class Range(object):
-    def __init__(self, range_type,data_type={}, axes= [],shape=[], values=[], variable_name='', tile_sets = []):
+
+    def __init__(self, range_type, data_type={}, axes=[], shape=[], values=[], variable_name='', tile_sets=[]):
         self.range_type = range_type
         self.data_type = data_type
         self.axis_names = axes
@@ -63,7 +69,6 @@ class Range(object):
         self.values = values
         self.variable_name = variable_name
         self.tile_sets = tile_sets
-
 
     def to_dict(self):
         range_dict = OrderedDict()
@@ -73,7 +78,7 @@ class Range(object):
         range_dict[self.variable_name]['dataType'] = self.data_type
         range_dict[self.variable_name]['axisNames'] = self.axis_names
         range_dict[self.variable_name]['shape'] = self.shape
-        if self.range_type == 'TiledNdArray' :
+        if self.range_type == 'TiledNdArray':
             range_dict[self.variable_name]['tileSets'] = self.tile_sets
 
         else:
@@ -82,7 +87,7 @@ class Range(object):
 
         return range_dict
 
-    def populate(self, data_type={}, axes= [],shape=[], values=[], variable_name=''):
+    def populate(self, data_type={}, axes=[], shape=[], values=[], variable_name=''):
         """
         Function to populate Range object with values
 
@@ -95,40 +100,43 @@ class Range(object):
 
 
 class Parameter(object):
-    def __init__(self, variable_name='', description='' , unit='', symbol='',symbol_type='',observed_property='',op_id=None, label_langtag='en' ):
+
+    def __init__(self, variable_name='', description='', unit='', symbol='', symbol_type='', observed_property='', op_id=None, label_langtag='en'):
         self.variable_name = variable_name
         self.param_type = 'Parameter'
         self.description = description
-        self.unit =  unit
+        self.unit = unit
         self.label_langtag = label_langtag
         self.symbol = symbol
         self.symbol_type = symbol_type
         self.observed_property = observed_property
         self.op_id = op_id
 
-
     def to_dict(self):
         param_dict = OrderedDict()
         param_dict[self.variable_name] = {}
         param_dict[self.variable_name]['type'] = self.param_type
         param_dict[self.variable_name]['description'] = self.description
-        param_dict[self.variable_name]['unit'] ={}
-        param_dict[self.variable_name]['unit']['label'] = {self.label_langtag : self.unit}
-        param_dict[self.variable_name]['symbol']={}
+        param_dict[self.variable_name]['unit'] = {}
+        param_dict[self.variable_name]['unit'][
+            'label'] = {self.label_langtag: self.unit}
+        param_dict[self.variable_name]['symbol'] = {}
         param_dict[self.variable_name]['symbol']['value'] = self.symbol
         param_dict[self.variable_name]['symbol']['type'] = self.symbol_type
-        param_dict[self.variable_name]['observedProperty']={}
+        param_dict[self.variable_name]['observedProperty'] = {}
         param_dict[self.variable_name]['observedProperty']['id'] = self.op_id
-        param_dict[self.variable_name]['observedProperty']['label'] = {self.label_langtag : self.observed_property}
+        param_dict[self.variable_name]['observedProperty'][
+            'label'] = {self.label_langtag: self.observed_property}
         return param_dict
 
 
-
 class Reference(object):
+
     def __init__(self, obj_list):
         self.coordinates = []
         self.obj_list = obj_list
         print('Object list : ', self.obj_list)
+
     def get_temporal(self, *args):
         return self.TemporalReferenceSystem(*args)
 
@@ -148,6 +156,7 @@ class Reference(object):
 
 
 class TemporalReferenceSystem(Reference):
+
     def __init__(self, cal=None):
         self.type = 'TemporalRS'
         self.coordinates = ['t']
@@ -156,17 +165,18 @@ class TemporalReferenceSystem(Reference):
             self.cal = "Gregorian"
         else:
             self.cal = cal
+
     def to_dict(self):
         ref_dict = OrderedDict()
         ref_dict['coordinates'] = self.coordinates
-        ref_dict['system'] ={}
+        ref_dict['system'] = {}
         ref_dict['system']['type'] = self.type
         ref_dict['system']['calendar'] = self.cal
         return ref_dict
 
 
-
 class SpatialReferenceSystem2d(Reference):
+
     def __init__(self):
         self.id = "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
         self.type = 'GeodeticCRS'
@@ -181,14 +191,14 @@ class SpatialReferenceSystem2d(Reference):
     def to_dict(self):
         ref_dict = OrderedDict()
         ref_dict['coordinates'] = self.coordinates
-        ref_dict['system'] ={}
+        ref_dict['system'] = {}
         ref_dict['system']['type'] = self.type
         ref_dict['system']['id'] = self.id
         return ref_dict
 
 
-
 class SpatialReferenceSystem3d(Reference):
+
     def __init__(self):
         self.id = "http://www.opengis.net/def/crs/EPSG/0/4979"
         self.type = 'GeodeticCRS'
@@ -203,15 +213,16 @@ class SpatialReferenceSystem3d(Reference):
     def to_dict(self):
         ref_dict = OrderedDict()
         ref_dict['coordinates'] = self.coordinates
-        ref_dict['system'] ={}
+        ref_dict['system'] = {}
         ref_dict['system']['type'] = self.type
         ref_dict['system']['id'] = self.id
         return ref_dict
 
 
 class TileSet(object):
+
     def __init__(self, tile_shape, url_template):
-        self.tile_shape = tile_shape #List containing shape
+        self.tile_shape = tile_shape  # List containing shape
         self.url_template = url_template
 
     def create_tileset(self):
@@ -221,7 +232,6 @@ class TileSet(object):
         tile_dict['urlTemplate'] = self.urlTemplate
         tileset.append(tile_dict)
         return tileset
-
 
     def get_url_template(self, val):
         self.val = val
@@ -235,12 +245,14 @@ class TileSet(object):
         if len(axis_names) == 1:
             url_template = '{' + axis_names[0] + '}.covjson'
         elif len(axis_names) == 2:
-            url_template = '{' + axis_names[0] + '}-{' + axis_names[1] +'}.covjson'
+            url_template = '{' + axis_names[0] + \
+                '}-{' + axis_names[1] + '}.covjson'
         elif len(axis_names) == 3:
-            url_template = '{' + axis_names[0] + '}-{' + axis_names[1] + '}-{' + axis_names[2] + '}.covjson'
-
+            url_template = '{' + axis_names[0] + '}-{' + \
+                axis_names[1] + '}-{' + axis_names[2] + '}.covjson'
 
         return url_template
+
     def get_tiles(self, tile_shape: object,  array) -> object:
         """
         Function which yields a generator which can be leveraged to return tile arrays from an input array
@@ -260,7 +272,6 @@ class TileSet(object):
 
             tile_count = math.ceil(self.shape[dim] / tile_shape[dim])
 
-
             for i in range(tile_count):
                 c = b[tile_shape[dim] * i:tile_shape[dim] * (i + 1)]
                 c = np.rollaxis(c, 1)
@@ -272,14 +283,3 @@ class TileSet(object):
     def get_array_shape(self):
         print(self.shape)
         return self.shape
-
-
-
-
-
-
-
-
-
-
-
