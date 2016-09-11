@@ -14,23 +14,23 @@ $ pip install pycovjson
 ## Usage:
 Command line interface:
 
-**pycovjson-convert** accepts 6 parameters, and can be run as followed 
+**[pycovjson-convert](https://github.com/Reading-eScience-Centre/pycovjson/blob/master/pycovjson/cli/convert.py)** accepts 6 parameters, and can be run as followed 
 ```
-$ python cli.py -i *name of input file(NetCDF)*-o *name of output file* -v *variable* -r *range type* [-t] *tiled* [-s] *tile shape as list*
+$ python cli/convert.py -i *name of input file(NetCDF)* -o *name of output file* -v *variable* -r *range type* [-t] *tiled* [-s] *tile shape as list*
 ```
 
 
 On running the script, a CoverageJSON file will be generated.
 
-**pycovjson-viewer** accepts up to 2 parameters: 
+**[pycovjson-viewer](https://github.com/Reading-eScience-Centre/pycovjson/blob/master/pycovjson/cli/viewer.py)** accepts up to 2 parameters: 
 ```
-$ python pycovjson-viewer.py -i *name of inputfile* [*-v display variable information only*] on running will display information about the input file. To be use in conjunction with **pycovjson-convert**.
+$ python cli/viewer.py -i *name of inputfile* [*-v display variable information only*] on running will display information about the input file. To be use in conjunction with **pycovjson-convert**.
 ```
 
 Examples
 --------
 ```
-$ python pycovjson-viewer.py -i melodies_landcover.nc
+$ python cli/viewer.py -i melodies_landcover.nc
     
-$ python pycovjson-convert -i melodies_landcover.nc -o coverage.json -v land_cover
+$ python cli/convert.py -i melodies_landcover.nc -o coverage.json -v land_cover
 ``` 
