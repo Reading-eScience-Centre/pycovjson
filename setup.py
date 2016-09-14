@@ -20,7 +20,7 @@ _classifiers  = [
 ]
 _description  = 'Create CovJSON files from common scientific data formats'
 _downloadURL  = 'http://pypi.python.org/pypi/pycovjson/'
-_requirements = ["xarray","numpy", "pandas", "scipy"]
+_requirements = ["xarray","numpy", "pandas", "netCDF4"]
 _keywords     = ['dataset', 'coverage', 'covjson']
 _license      = 'Copyright :: University of Reading'
 _long_description    = 'A python utility library for creating CovJSON files from common scientific data formats'
