@@ -14,7 +14,7 @@ _classifiers  = [
     'Development Status :: 4 - Beta',
     'License :: OSI Approved :: BSD License',
     'Operating System :: OS Independent',
-    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
     'Topic :: Internet :: WWW/HTTP',
     'Topic :: Software Development :: Libraries :: Python Modules',
 ]
@@ -28,7 +28,7 @@ _name         = 'pycovjson'
 _namespaces   = []
 _testSuite    = 'pycovjson.test'
 _url          = 'https://github.com/Reading-eScience-Centre/pycovjson'
-_version      = '0.1.0'
+_version      = '0.3.0'
 _zipSafe      = True
 _entry_points = {'console_scripts' : ['pycovjson-convert = pycovjson.cli.convert:main', 'pycovjson-viewer = pycovjson.cli.viewer:main']}
 
