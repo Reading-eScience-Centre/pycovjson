@@ -1,4 +1,4 @@
-
+import netCDF4
 from pycovjson.model import Coverage, Domain, Range, Parameter, Reference
 import xarray as xr
 from collections import OrderedDict
