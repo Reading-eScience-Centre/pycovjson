@@ -20,10 +20,12 @@ def main():
     inputfile = args.inputfile
     variables = args.variables
     reader = Reader(inputfile)
-    reader.get_xarray()
+    ds = reader.get_xarray()
+    # TODO
+    # if variables:
+    #     reader.get_vars_with_long_name(inputfile)
 
-    if variables:
-        reader.get_vars_with_long_name(inputfile)
+    print(ds)
 
 
 if __name__ == '__main__':
