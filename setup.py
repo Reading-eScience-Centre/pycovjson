@@ -20,7 +20,7 @@ _classifiers  = [
 ]
 _description  = 'Create CovJSON files from common scientific data formats'
 _downloadURL  = 'http://pypi.python.org/pypi/pycovjson/'
-_requirements = ["xarray","numpy", "pandas"]
+_requirements = ["xarray","numpy", "pandas", "scipy"]
 _keywords     = ['dataset', 'coverage', 'covjson']
 _license      = 'Copyright :: University of Reading'
 _long_description    = 'A python utility library for creating CovJSON files from common scientific data formats'
@@ -28,7 +28,7 @@ _name         = 'pycovjson'
 _namespaces   = []
 _testSuite    = 'pycovjson.test'
 _url          = 'https://github.com/Reading-eScience-Centre/pycovjson'
-_version      = '0.3.2'
+_version      = '0.3.3'
 _zipSafe      = True
 _entry_points = {'console_scripts' : ['pycovjson-convert = pycovjson.cli.convert:main', 'pycovjson-viewer = pycovjson.cli.viewer:main']}
 
