@@ -1,8 +1,8 @@
-from netCDF4 import Dataset, num2date
+
 from pycovjson.model import Coverage, Domain, Range, Parameter, Reference
 import xarray as xr
 from collections import OrderedDict
-import datetime, pandas as pd
+import pandas as pd
 import numpy as np
 import re
 
