@@ -34,3 +34,7 @@ $ python cli/viewer.py -i melodies_landcover.nc
     
 $ python cli/convert.py -i melodies_landcover.nc -o coverage.json -v land_cover
 ``` 
+
+Project Roadmap
+---------------
+The project roadmap can be found [here.](https://github.com/Reading-eScience-Centre/pycovjson/projects/1)
