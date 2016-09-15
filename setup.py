@@ -3,9 +3,9 @@ from setuptools import find_packages, setup
 
 # Package data
 # ------------
-_author       = 'rileywilliams'
-_authorEmail  = 'resc@reading.ac.uk'
-_classifiers  = [
+_author = 'rileywilliams'
+_authorEmail = 'resc@reading.ac.uk'
+_classifiers = [
     'Environment :: Console',
     'Intended Audience :: Developers',
     'Intended Audience :: Information Technology',
@@ -34,6 +34,7 @@ _entry_points = {'console_scripts' : ['pycovjson-convert = pycovjson.cli.convert
 
 # Setup Metadata
 # --------------
+
 
 def _read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
