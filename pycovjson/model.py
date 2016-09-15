@@ -179,7 +179,7 @@ class SpatialReferenceSystem2d(Reference):
 
     def __init__(self):
         self.id = "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
-        self.type = 'GeodeticCRS'
+        self.type = 'GeographicCRS'
         Reference.coordinates = ['x', 'y']
 
     def set_type(self, new_type):
@@ -201,7 +201,7 @@ class SpatialReferenceSystem3d(Reference):
 
     def __init__(self):
         self.id = "http://www.opengis.net/def/crs/EPSG/0/4979"
-        self.type = 'GeodeticCRS'
+        self.type = 'GeographicCRS'
         Reference.coordinates = ['x', 'y', 'z']
 
     def set_type(self, new_type):

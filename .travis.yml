@@ -1,19 +1,16 @@
 language: python
 python:
-  - "3.2"
-  - "3.3"
-  - "3.4"
+
   - "3.5"
 
 
 install:
 
 
-  - pip install numpy xarray
-  - python setup.py install
+ - pip install pycovjson
 
 script:
 
-  - python3 pycovjson/cli/convert.py -i pycovjson/polcoms.nc -v sst
+  - pycovjson-convert -i pycovjson/polcoms.nc -v sst
   - cat coverage.json | more
 
