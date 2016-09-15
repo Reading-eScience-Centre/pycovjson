@@ -1,7 +1,6 @@
 
 from pycovjson.model import *
-from pycovjson.readNetCDFOOP import NetCDFReader as Reader
-import numpy
+from pycovjson.read_netcdf import NetCDFReader as Reader
 import time, json, uuid
 
 
@@ -25,21 +24,28 @@ class Writer(object):
         self.tiled = tiled
         if tiled:
             self.range_type = 'TiledNdArray'
-        else: self.range_type = 'NdArray'
+        else:
+            self.range_type = 'NdArray'
         self.dataset_path = dataset_path
         self.Reader = Reader(dataset_path)
         self.axis_dict = self.Reader.get_axes()
         self.axis_list = list(self.axis_dict.keys())
         self.ref_list = []
         if 't' in self.axis_list and 'z' in self.axis_list:
+            print('t and z TRUE')
             self.ref_list.append(TemporalReferenceSystem())
             self.ref_list.append(SpatialReferenceSystem3d())
 
         if 't' in self.axis_list and 'z' not in self.axis_list:
+            print('t and  NOT z ')
             self.ref_list.append(TemporalReferenceSystem())
             self.ref_list.append(SpatialReferenceSystem2d())
         elif 't' not in self.axis_list and 'z' not in self.axis_list:
+            print('not t not z')
             self.ref_list.append(SpatialReferenceSystem2d())
+
+        # Debug
+        print(self.ref_list)
 
 
     def write(self):
@@ -48,7 +54,10 @@ class Writer(object):
         """
 
         coverage = self._construct_coverage()
-        self.save_covjson_tiled(coverage, self.output_name)
+        if self.tiled:
+            self.save_covjson_tiled(coverage, self.output_name)
+        else:
+            self.save_covjson(coverage, self.output_name)
         pass
 
 
@@ -97,7 +106,7 @@ class Writer(object):
             unit = self.Reader.get_units(variable)
             symbol = self.Reader.dataset[variable].units
             label = self.Reader.dataset[variable].long_name
-            params = Parameter(description=description, variable_name=variable, symbol=symbol, unit=unit,observed_property=label)
+            params = Parameter(description=description, variable_name=variable, symbol=symbol, unit=unit, observed_property=label)
 
 
         return params
