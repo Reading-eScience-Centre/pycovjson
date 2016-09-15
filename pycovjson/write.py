@@ -1,6 +1,6 @@
 
 from pycovjson.model import *
-from pycovjson.readNetCDFOOP import NetCDFReader as Reader
+from pycovjson.read_netcdf import NetCDFReader as Reader
 import numpy
 import time
 import json
@@ -50,7 +50,11 @@ class Writer(object):
         """
 
         coverage = self._construct_coverage()
-        self.save_covjson_tiled(coverage, self.output_name)
+        if self.tiled:
+            self.save_covjson_tiled(coverage, self.output_name)
+        else:
+            self.save_covjson(coverage, self.output_name)
+
         pass
 
     def _construct_coverage(self):
