@@ -1,9 +1,11 @@
 
 
 from pycovjson.model import TileSet, Coverage, Reference
-import os, numpy as np
+import os
+import numpy as np
 import pycovjson
 from pycovjson.readNetCDFOOP import NetCDFReader
+
 
 def test():
     dir_name = os.path.dirname(__file__)
@@ -14,12 +16,9 @@ def test():
     dataset_path = os.path.join(dir_name, 'testdata', testfile)
 
     dataset = np.arange(60)
-    dataset.reshape(10,6)
+    dataset.reshape(10, 6)
 
     urlTemplate = 'localhost:8080/'
-
-
-
 
     tile_shape = [2, 1]
     # tileSet = TileSet(tile_shape, urlTemplate, dataset)
@@ -34,6 +33,7 @@ def test():
 
     assert len(variable_names) > 0
 
+
 def read():
     dir_name = os.path.dirname(__file__)
     testfile = 'test_xy.nc'
@@ -42,8 +42,6 @@ def read():
     # 1.
     reader = NetCDFReader(dataset_path)
     coverage = reader.read()
-
-
 
 
 test()

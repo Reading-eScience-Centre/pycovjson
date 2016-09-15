@@ -31,21 +31,21 @@ rnc.extract_var_data(var_names)
 
 # TEST - REPLACE WITH FUNCTION TO TAKE OPTIONS FROM USER
 dim_list = rnc.group_vars(var_names)
-num_list =list(range(0,len(dim_list)))
+num_list = list(range(0, len(dim_list)))
 
-variable_dimensions = dict(zip(num_list,dim_list))
+variable_dimensions = dict(zip(num_list, dim_list))
 
 
 def get_variables():
     var_names = rnc.get_var_names(dset)
-    num_list = list(range(0,len(var_names)))
+    num_list = list(range(0, len(var_names)))
     var_dict = dict(zip(num_list, var_names))
     print(var_dict)
     print(variable_dimensions)
     choice = int(input("Enter number of variable: "))
     return var_dict[choice]
 
-user_opts =[]
+user_opts = []
 choice = get_variables()
 user_opts.append(choice)
 
@@ -82,8 +82,6 @@ def construct_parameters(var_name):
     return parameters
 
 
-
-
 def construct_referencing(var_name):
     """
 
@@ -113,21 +111,19 @@ def construct_referencing(var_name):
     print(ref_list)
     print('Construct Referencing ran successfuly...')
 
-
     # referencing_list.append(referencing[0])
     # referencing_list.append(referencing[1])
 
     return ref_list
 
+
 def construct_tiles(var_name):
-    tileObj = TileSet([None, 'x', 'y'],'https://www.googledrive.com/host//')
+    tileObj = TileSet([None, 'x', 'y'], 'https://www.googledrive.com/host//')
     tileObj.create_tileset('TEST')
     return tileObj
 
 
-
-def construct_covjson(json_template, data,  variables,domain_type="Grid", time=False, tiled=False):
-
+def construct_covjson(json_template, data,  variables, domain_type="Grid", time=False, tiled=False):
     """
     Create covJSON object, fill with data values
     :rtype: object
@@ -145,13 +141,14 @@ def construct_covjson(json_template, data,  variables,domain_type="Grid", time=F
     # Coordinate data x - longitude y- latitude
     json_template['domain']['axes']['x']['values'] = (data[longitude].tolist())
     json_template['domain']['axes']['y']['values'] = data[latitude].tolist()
-    #Melodies landcover dataset, latitude values flipped, use flipup to correct
+    # Melodies landcover dataset, latitude values flipped, use flipup to correct
     #json_template['domain']['axes']['y']['values'] = np.flipud(data[latitude]).tolist()
 
     # json_template['domain']['referencing'] = construct_referencing(user_opts[0])
     if time:
         json_template['domain']['axes']['t'] = {'values': []}
-        json_template['domain']['axes']['t']['values']= rnc.convert_time(rnc.get_time())
+        json_template['domain']['axes']['t'][
+            'values'] = rnc.convert_time(rnc.get_time())
     json_template['domain']['referencing'] = construct_referencing(choice)
     for var in variables:
 
@@ -165,9 +162,10 @@ def construct_covjson(json_template, data,  variables,domain_type="Grid", time=F
             json_template['ranges'][var]['tileSets'] = {}
 
             for tile in range(len(tiles.get_array_shape())):
-                json_template['ranges'][var]['tileSets']['tileShape'] = tile_shape
-                json_template['ranges'][var]['tileSets']['urlTemplate'] = tiles.get_url_template(tile)
-
+                json_template['ranges'][var][
+                    'tileSets']['tileShape'] = tile_shape
+                json_template['ranges'][var]['tileSets'][
+                    'urlTemplate'] = tiles.get_url_template(tile)
 
             json_tile = {}
             tile_list = list(tiles.get_tiles(tile_shape, variable))
@@ -176,31 +174,33 @@ def construct_covjson(json_template, data,  variables,domain_type="Grid", time=F
                 json_tile['values'] = tile
                 save_json(json_tile, 'json_tile.json')
 
-
-
-
         else:
             json_template['ranges']
             json_template['ranges'][var] = construct_range(var, tiled=False)
-            json_template['ranges'][var]["values"] ={}
-            json_template['ranges'][var]['values'] =(data[var].ravel().tolist())
-
+            json_template['ranges'][var]["values"] = {}
+            json_template['ranges'][var]['values'] = (
+                data[var].ravel().tolist())
 
         json_template['parameters'][var] = construct_parameters(var)
-        json_template['parameters'][var]['description'] = rnc.get_description(var)
-        json_template['parameters'][var]['unit']['label']['en'] = rnc.get_units(var)
+        json_template['parameters'][var][
+            'description'] = rnc.get_description(var)
+        json_template['parameters'][var]['unit'][
+            'label']['en'] = rnc.get_units(var)
         if rnc.get_std_name(var) != None:
-            json_template['parameters'][var]['observedProperty']['id'] = 'http://vocab.nerc.ac.uk/standard_name/' + str(rnc.get_std_name(var))
+            json_template['parameters'][var]['observedProperty'][
+                'id'] = 'http://vocab.nerc.ac.uk/standard_name/' + str(rnc.get_std_name(var))
         else:
             json_template['parameters'][var]['observedProperty']['id'] = None
 
-        json_template['parameters'][var]['observedProperty']['label']['en'] = var
-
+        json_template['parameters'][var][
+            'observedProperty']['label']['en'] = var
 
     return json_template
 
 
-# Adapted from https://github.com/the-iea/ecem/blob/master/preprocess/ecem/util.py - letmaik
+# Adapted from
+# https://github.com/the-iea/ecem/blob/master/preprocess/ecem/util.py -
+# letmaik
 
 
 def save_json(obj, path, **kw):
@@ -214,7 +214,8 @@ def save_json(obj, path, **kw):
 
 
 def save_covjson(obj, path):
-    # skip indentation of certain fields to make it more compact but still human readable
+    # skip indentation of certain fields to make it more compact but still
+    # human readable
     for axis in obj['domain']['axes'].values():
         compact(axis, 'values')
     for ref in obj['domain']['referencing']:
@@ -237,12 +238,14 @@ def no_indent(obj, *names):
 
 # From http://stackoverflow.com/a/25935321
 class Custom(object):
+
     def __init__(self, value, **custom_args):
         self.value = value
         self.custom_args = custom_args
 
 
 class CustomEncoder(json.JSONEncoder):
+
     def __init__(self, *args, **kwargs):
         super(CustomEncoder, self).__init__(*args, **kwargs)
         self._replacement_map = {}
@@ -262,28 +265,25 @@ class CustomEncoder(json.JSONEncoder):
         return result
 
 
-
-
-
 def set_coords(coord_list, t):
     t = t
     x = coord_list[0]
     y = coord_list[1]
-    z= coord_list[2]
-    return tuple([x,y,z,t])
+    z = coord_list[2]
+    return tuple([x, y, z, t])
+
 
 def detect_coords(dset):
     """
     :return: Tuple containing lat and lon var names
     """
     for var in dset.variables:
-        if rnc.is_x(var): x = var
-        if rnc.is_y(var): y = var
+        if rnc.is_x(var):
+            x = var
+        if rnc.is_y(var):
+            y = var
 
-
-
-    return tuple([x,y])
-
+    return tuple([x, y])
 
 
 out_file = open(json_file, "w")
@@ -291,16 +291,12 @@ json.dumps(json_template, indent=4)
 
 # Test parameters
 
-print("Coords are: " , detect_coords(dset))
+print("Coords are: ", detect_coords(dset))
 print(dset)
 
 var_names = rnc.get_var_names(dset)
 data = rnc.extract_var_data(var_names)
-json_obj = construct_covjson(json_template, rnc.extract_var_data(var_names),user_opts,domain_type="Grid" ,time=rnc.has_time(),tiled=True)
+json_obj = construct_covjson(json_template, rnc.extract_var_data(
+    var_names), user_opts, domain_type="Grid", time=rnc.has_time(), tiled=True)
 
 save_covjson(json_obj, json_file)
-
-
-
-
-
