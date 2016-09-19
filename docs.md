@@ -10,13 +10,13 @@ Implementations
   * write.py contains all of the code for constructing and writing to CoverageJSON
 
 * **readNetCDFOOP.py**
-readNetCDFOOP.py contains all of the code for reading the NetCDF data, as well as code for reformatting data.
+  * readNetCDFOOP.py contains all of the code for reading the NetCDF data, as well as code for reformatting data.
 
 * **convert.py**
-convert.py is the command line interface for pycovjson, used to convert files to CoverageJSON
+  * convert.py is the command line interface for pycovjson, used to convert files to CoverageJSON
 
 * **viewer.py**
-viewer.py is the command line viewer, used to view netCDF files.
+  * viewer.py is the command line viewer, used to view netCDF files.
 
 In Progress
 -----------
