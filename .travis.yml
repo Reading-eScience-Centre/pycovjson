@@ -3,12 +3,17 @@ python:
 
   - "3.5"
 
-
+before_install:
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/miniconda3/bin:$PATH
+  - conda update --yes conda
 
 install:
 
  - conda install -c rileywilliams pycovjson
- - wget https://www.dropbox.com/s/mmgxijdvhemdzoy/foam_2011-01-01.nc?dl=0
+ - wget https://www.dropbox.com/s/mmgxijdvhemdzoy/foam_2011-01-01.nc
 
 script:
 
