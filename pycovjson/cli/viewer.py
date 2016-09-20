@@ -7,13 +7,13 @@ TODO - Add support for other formats and more customisation
 import argparse
 
 
-from pycovjson.readNetCDFOOP import NetCDFReader as Reader
+from pycovjson.read_netcdf import NetCDFReader as Reader
 
 
 def main():
     parser = argparse.ArgumentParser(description='View Scientific Data files.')
-    parser.add_argument('-i', '--input', dest='inputfile',
-                        help='Name of input file', required=True)
+    parser.add_argument('inputfile', action ='store',
+                        help='Name of input file')
 
     parser.add_argument('-v', '--variables,', dest='variables',
                         help='Display variables', action='store_true')
