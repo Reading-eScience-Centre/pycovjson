@@ -15,11 +15,12 @@ before_install:
   # Replace dep1 dep2 ... with your dependencies
   - conda create --yes -q -n test-environment python=$TRAVIS_PYTHON_VERSION xarray netCDF4
   - source activate test-environment
-  - python setup.py install
+
 
 install:
 
- - conda install -c rileywilliams pycovjson
+ # - conda install -c rileywilliams pycovjson --yes
+ - python setup.py install
  - wget https://www.dropbox.com/s/mmgxijdvhemdzoy/foam_2011-01-01.nc
 
 script:
