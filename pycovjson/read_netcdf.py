@@ -2,7 +2,6 @@ import netCDF4
 from pycovjson.model import Coverage, Domain, Range, Parameter, Reference
 import xarray as xr
 from collections import OrderedDict
-import datetime
 import pandas as pd
 import numpy as np
 import re
@@ -261,7 +260,7 @@ class NetCDFReader(object):
             axis = list(map(str.lower, list(axis)))
             return axis
         except:
-            print('Error occured: Variable has no axis attribute')
+            print('Error occured: Variable "' + variable + '" has no axis attribute')
             pass
         try:
             axes_list = []
