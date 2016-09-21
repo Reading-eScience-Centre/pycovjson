@@ -1,7 +1,6 @@
 
 from pycovjson.model import *
 from pycovjson.read_netcdf import NetCDFReader as Reader
-import numpy
 import time
 import json
 import uuid
@@ -53,7 +52,7 @@ class Writer(object):
         if self.tiled:
             self.save_covjson_tiled(coverage, self.output_name)
         else:
-            self.save_covjson(coverage, self.output_name)
+            self._save_covjson(coverage, self.output_name)
 
         pass
 
@@ -62,7 +61,6 @@ class Writer(object):
         Constructs Coverage object from constituent parts
         :return: coverage object
         """
-        print(self.tile_shape, type(self.tile_shape))
         coverage = Coverage(self._construct_domain(), self._construct_range(
         ), self._construct_params(), self._construct_refs()).to_dict()
         return coverage
