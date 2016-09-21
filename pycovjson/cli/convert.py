@@ -6,7 +6,7 @@ Version: 0.1.0
 import argparse
 
 from pycovjson.write import Writer
-from pycovjson.readNetCDFOOP import NetCDFReader as Reader
+from pycovjson.read_netcdf import NetCDFReader as Reader
 
 
 def main():
