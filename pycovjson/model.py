@@ -135,7 +135,6 @@ class Reference(object):
     def __init__(self, obj_list):
         self.coordinates = []
         self.obj_list = obj_list
-        print('Object list : ', self.obj_list)
 
     def get_temporal(self, *args):
         return self.TemporalReferenceSystem(*args)
@@ -151,7 +150,7 @@ class Reference(object):
 
         for elem in self.obj_list:
             item_list.append(elem.to_dict())
-        print('Item list:', item_list)
+        #print('Item list:', item_list)
         return item_list
 
 
