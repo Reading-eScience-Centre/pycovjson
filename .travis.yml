@@ -16,7 +16,7 @@ install:
 - wget https://www.dropbox.com/s/mmgxijdvhemdzoy/foam_2011-01-01.nc
 script:
 - pycovjson-convert -i foam_2011-01-01.nc -v SALTY
-- cat coverage.json | more
+- cat coverage.covjson | more
 deploy:
   provider: pypi
   user: rileywilliams
