@@ -25,6 +25,6 @@ install:
 
 script:
 
-  - pycovjson-convert -i foam_2011-01-01.nc -v sst
+  - pycovjson-convert -i foam_2011-01-01.nc -v SALTY
   - cat coverage.json | more
 
