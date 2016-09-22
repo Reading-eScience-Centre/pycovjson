@@ -17,6 +17,7 @@ install:
 script:
 - pycovjson-convert -i foam_2011-01-01.nc -v SALTY
 - test -s coverage.covjson
+- nosetests -v pycovjson
 
 deploy:
   provider: pypi
