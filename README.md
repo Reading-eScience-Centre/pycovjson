@@ -35,6 +35,20 @@ $ python cli/viewer.py
 $ python cli/convert.py -i melodies_landcover.nc -o coverage.json -v land_cover
 ``` 
 
+##Library
+###Convert.py
+Once pycovjson is installed, type the following at the top of your code:
+```
+import pycovjson.convert
+```
+Once imported you can then use the convert function within your projects.
+###Examples
+```
+pycovjson.convert('polcoms.nc', 'coverage.covjson', [sst])
+```
+This will generate a file called coverage.covjson in the directory where
+the script is located.
+
 Project Roadmap
 ---------------
 The project roadmap can be found [here.](https://github.com/Reading-eScience-Centre/pycovjson/projects/1)
