@@ -4,7 +4,7 @@ from pycovjson.model import TileSet, Coverage, Reference
 import os
 import numpy as np
 import pycovjson
-from pycovjson.readNetCDFOOP import NetCDFReader
+from pycovjson.read_netcdf import NetCDFReader
 
 
 def test():
@@ -43,5 +43,9 @@ def read():
     reader = NetCDFReader(dataset_path)
     coverage = reader.read()
 
+def test_convert():
+    import pycovjson.convert
+    pycovjson.convert('foam_2011-01-01.nc','coverage.covjson', ['SALTY'])
 
 test()
+test_convert()
