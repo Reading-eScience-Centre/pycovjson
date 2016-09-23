@@ -1,7 +1,9 @@
 .. # encoding: utf-8
-   
-pycovjson readNetCDF.py
+
+pycovjson read_netcdf.py
 ************************
 
-.. autoclass:: readNetCDF
+.. autoclass:: read_netcdf
     :members:
+
+    .. automethod:: __init__

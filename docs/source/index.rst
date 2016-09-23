@@ -20,11 +20,10 @@ Contents:
    core/read_netcdf
    core/setup
    core/write
-   
+
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
