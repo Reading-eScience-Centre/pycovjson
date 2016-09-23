@@ -16,14 +16,11 @@ Contents:
    cli/cli
    core/main
    core/model
-   core/ncdump
-   core/readNetCDF
-   core/readNetCDFOOP
+   core/convert
+   core/read_netcdf
    core/setup
    core/write
-   core/writeJSON
-   core/writeNetCDF
-
+   
 Indices and tables
 ==================
 
