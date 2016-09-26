@@ -38,7 +38,7 @@ $ pycovjson-viewer [*-v display variable information only*] on running will disp
 Examples
 --------
 ```
-$ pycovjson-viewer
+$ pycovjson-viewer *name of netCDF file*
     
 $ pycovjson-convert -i melodies_landcover.nc -o coverage.json -v land_cover
 ``` 
