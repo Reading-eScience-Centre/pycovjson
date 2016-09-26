@@ -1,5 +1,6 @@
 # pycovjson  
 [![Build Status](https://travis-ci.org/Reading-eScience-Centre/pycovjson.svg?branch=master)](https://travis-ci.org/Reading-eScience-Centre/pycovjson)
+[![Coverage Status](https://coveralls.io/repos/github/RileyWilliams/pycovjson/badge.svg?branch=master)](https://coveralls.io/github/RileyWilliams/pycovjson?branch=master)
 [![PyPI](https://img.shields.io/pypi/v/pycovjson.svg?maxAge=2592000?style=plastic)](https://pypi.python.org/pypi/pycovjson)
 [![Python Badge](https://img.shields.io/badge/python-3-blue.svg)](https://www.python.org/downloads/)
 [![Anaconda-Server Badge](https://anaconda.org/auto/flask-neo4j/badges/version.svg)](https://anaconda.org/auto/flask-neo4j)
