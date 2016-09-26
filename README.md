@@ -6,10 +6,18 @@
 Create **[CovJSON](https://covjson.org/)** files from common scientific data formats(e.g NetCDF)
 
 ##Installation:
-
-Open up a command line and type the following:
+If you already have netCDF4 and hdf5 installed,
+open up a command line and type the following:
 ```
 $ pip install pycovjson
+```
+If not, you will need to download conda for your operating system,
+details of how to do this can be found [here.](http://conda.pydata.org/docs/install/quick.html)
+After you have installed conda, type the following in the command line:
+```
+$ conda install netcdf4
+$ pip install pycovjson
+
 ```
 ## Usage:
 Command line interface:
@@ -24,15 +32,15 @@ On running the script, a CoverageJSON file will be generated.
 
 **[pycovjson-viewer](https://github.com/Reading-eScience-Centre/pycovjson/blob/master/pycovjson/cli/viewer.py)** accepts up to 2 parameters: 
 ```
-$ python cli/viewer.py [*-v display variable information only*] on running will display information about the input file. To be use in conjunction with **pycovjson-convert**.
+$ pycovjson-viewer [*-v display variable information only*] on running will display information about the input file. To be use in conjunction with **pycovjson-convert**.
 ```
 
 Examples
 --------
 ```
-$ python cli/viewer.py 
+$ pycovjson-viewer
     
-$ python cli/convert.py -i melodies_landcover.nc -o coverage.json -v land_cover
+$ pycovjson-convert -i melodies_landcover.nc -o coverage.json -v land_cover
 ``` 
 
 ##Library
