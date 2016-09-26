@@ -17,7 +17,6 @@ After you have installed conda, type the following in the command line:
 ```
 $ conda install netcdf4
 $ pip install pycovjson
-
 ```
 ## Usage:
 Command line interface:
@@ -26,7 +25,6 @@ Command line interface:
 ```
 $ python cli/convert.py -i *name of input file(NetCDF)* -o *name of output file* -v *variable* -r *range type* [-t] *tiled* [-s] *tile shape as list*
 ```
-
 
 On running the script, a CoverageJSON file will be generated.
 
