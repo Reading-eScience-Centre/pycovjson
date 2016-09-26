@@ -2,8 +2,7 @@
 
 pycovjson read_netcdf.py
 ************************
+.. module:: pycovjson.read_netcdf
 
-.. autoclass:: read_netcdf
+.. autoclass:: NetCDFReader
     :members:
-
-    .. automethod:: __init__

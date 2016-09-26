@@ -2,8 +2,17 @@
 
 pycovjson model.py
 ******************
+.. module:: pycovjson.model
 
-coverage
+Coverage
 ========
-.. autoclass:: model.Coverage
+.. autoclass:: Coverage
+    :members:
+Domain
+======
+.. autoclass:: Domain
+    :members:
+Range
+=====
+.. autoclass:: Range
     :members:

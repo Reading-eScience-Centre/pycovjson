@@ -1,5 +1,5 @@
 .. # encoding: utf-8
-   
+
 Quickstart
 **********
 
@@ -9,16 +9,16 @@ The following document explains how to quickly get up and running with pycovjson
 
 .. _data:
 
-CoverageJSON Generation 
+CoverageJSON Generation
 -----------------------
 
-cli.py
-^^^^^^^
+pycovjson-convert
+^^^^^^^^^^^^^^^^^
 This is very simple... ::
-  
+
   # ....some code
 
-More on using pycovjson functions later... 
+More on using pycovjson functions later...
 
 
 .. _concl:
