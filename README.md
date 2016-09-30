@@ -57,6 +57,11 @@ pycovjson.convert('polcoms.nc', 'coverage.covjson', [sst])
 This will generate a file called coverage.covjson in the directory where
 the script is located.
 
+
+##Supported formats
+Currently only NetCDF is supported, but only the reader function would need to be changed, as the writer function uses data loaded 
+into python data structures.
+
 Project Roadmap
 ---------------
 The project roadmap can be found [here.](https://github.com/Reading-eScience-Centre/pycovjson/projects/1)
