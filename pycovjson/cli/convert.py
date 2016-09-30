@@ -10,6 +10,18 @@ from pycovjson.read_netcdf import NetCDFReader as Reader
 
 
 def main():
+    """
+    Command line interface for pycovjson - Converts Scientific Data Formats into CovJSON and saves to disk.
+
+    :argument -i: Input file path.
+    :argument -o: Output file name.
+    :argument -t: Use Tiling.
+    :argument -v: Which variable to populate coverage with.
+    :argument -s: [tile shape]: Tile shape.
+    :argument -n: Use interactive mode.
+
+
+    """
     parser = argparse.ArgumentParser(
         description='Convert Scientific Data Formats into CovJSON.')
     parser.add_argument('-i', '--input', dest='inputfile',
@@ -22,12 +34,20 @@ def main():
                         help='Tile shape, list', type=int)
     parser.add_argument('-v', dest='variable',
                         help='Variable to populate coverage with')
+    parser.add_argument('-n', '--interactive', action='store_true', help='Enter interactive mode')
     args = parser.parse_args()
     inputfile = args.inputfile
     outputfile = args.outputfile
     variable = args.variable
     tiled = args.tiled
     tile_shape = args.shape
+    interactive = args.interactive
+
+    if interactive:
+        print(type(variable))
+        axis = input('Which Axis?', Reader.get_axis(variable))
+
+
 
     if tiled and len(tile_shape) == 0:
         reader = Reader(inputfile)
