@@ -59,8 +59,7 @@ the script is located.
 
 
 ##Supported formats
-Currently only NetCDF is supported, but only the reader function would need to be changed, as the writer function uses data loaded 
-into python data structures.
+Currently only NetCDF is supported, but only the reader function would need to be changed, as the pycovjson loads data into python data structures before writing to CovJSON.
 
 Project Roadmap
 ---------------
