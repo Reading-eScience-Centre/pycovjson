@@ -1,5 +1,4 @@
-import netCDF4
-from pycovjson.model import Coverage, Domain, Range, Parameter, Reference
+from pycovjson.model import Domain, Range, Parameter, Reference
 import xarray as xr
 from collections import OrderedDict
 import pandas as pd
@@ -18,13 +17,10 @@ class NetCDFReader(object):
             print('File not found.')
             exit()
 
-        pass
-
     def read(self, file_path):
         self.file_path = file_path
         self.dataset = xr.open_dataset(self.file_path)
         self.var_names = self.get_var_names(self.dataset)
-        pass
 
     def print(self):
         print(self.dataset)
@@ -37,25 +33,27 @@ class NetCDFReader(object):
     def close(self):
         self.dataset.close()
 
+    @staticmethod
     def _get_domain(self):
         domain = Domain('Grid')
-
-        # Loads of stuff
-
         return domain
 
-    def _getRanges(self):
-        range = Range()
-        return range
+    @staticmethod
+    def _get_ranges(self):
+        _range = Range()
+        return _range
 
-    def _getParams(self):
+    @staticmethod
+    def _get_params(self):
         params = Parameter()
         return params
 
-    def _getReference(self):
+    @staticmethod
+    def _get_reference(self):
         reference = Reference()
         return reference
 
+    @staticmethod
     def get_var_names(self, dataset):
         try:
             variable_names = [var for var in dataset.variables]
@@ -70,7 +68,7 @@ class NetCDFReader(object):
             try:
                 long_names.append(dataset[variable].long_name)
             except:
-                long_names.append(dataset[variable].standard_name)
+                long_names.append(dataset[variable].name)
         return long_names
 
     def get_vars_with_long_name(self, dataset):
@@ -106,9 +104,7 @@ class NetCDFReader(object):
         :return: Boolean value
         """
         y_list = ['lat', 'latitude', 'LATITUDE', 'Latitude', 'y']
-        if self.get_units(var) == 'degrees_north':
-            return True
-        elif self.get_name(var) in y_list:
+        if self.get_units(var) == 'degrees_north' or self.get_name(var) in y_list:
             return True
         else:
             return False
@@ -133,11 +129,11 @@ class NetCDFReader(object):
     def has_time(self):
         time_list = ['t', 'TIME', 'time', 's', 'seconds', 'Seconds', ]
         for var in self.var_names:
-            if (self.get_units(var) in time_list):
+            if self.get_units(var) in time_list:
                 return True
-            if (self.get_name in time_list):
+            if self.get_name in time_list:
                 return True
-            if (var in time_list):
+            if var in time_list:
                 return True
             else:
                 return False
@@ -177,7 +173,7 @@ class NetCDFReader(object):
             return re.sub(r'[0-9]+', '', var_type)
 
         except Exception as e:
-            return None
+            raise e
 
     def get_dimensions(self, variable):
         """
@@ -195,10 +191,10 @@ class NetCDFReader(object):
         """
 
         :param variable: input variable
-        :return: standard_name
+        :return: name
         """
         try:
-            std_name = self.dataset[variable].standard_name
+            std_name = self.dataset[variable].name
             return std_name
         except:
             return None
@@ -260,8 +256,7 @@ class NetCDFReader(object):
             axis = list(map(str.lower, list(axis)))
             return axis
         except:
-            print('Error occured: Variable "' + variable + '" has no axis attribute')
-            pass
+            print("Error occured: Variable '%s' has no axis attribute" % (variable))
         try:
             axes_list = []
             axes_dict = self.get_axes()
@@ -285,17 +280,10 @@ class NetCDFReader(object):
         date_list = []
         times = self.dataset[t_variable].values
 
-        units = self.dataset[t_variable].standard_name
-
-        # cal = self.dataset[t_variable].calendar
-        # dates = (num2date(times, units=units, calendar='standard')).tolist()
-        # print(dates)
-
         for time in times:
             time = pd.to_datetime(str(time))
             date_list.append(time.strftime('%Y-%m-%dT%H:%M:%SZ'))
 
-        # date_list = [dates.stfrtime('%Y-%m-%dT:%H') for date in dates]
         return date_list
 
     def extract_var_data(self, var_names):
@@ -341,25 +329,22 @@ class NetCDFReader(object):
             except:
                 pass
 
-            # if coord in x_list or self.dataset[coord].standard_name in x_list: axes_dict['x'] = coord
-            # if coord in y_list or self.dataset[coord].standard_name in y_list: axes_dict['y'] = coord
-
-            if coord in t_list or self.dataset[coord].standard_name in t_list:
+            if coord in t_list or self.dataset[coord].name in t_list:
                 axes_dict['t'] = coord
-            if coord in z_list or self.dataset[coord].standard_name in z_list:
+            if coord in z_list or self.dataset[coord].name in z_list:
                 axes_dict['z'] = coord
 
         return axes_dict
 
     def get_x(self):
-        for elem in (self.dataset.coords):
+        for elem in self.dataset.coords:
 
             if elem in ['lon', 'longitude', 'LONGITUDE', 'Longitude', 'x', 'X']:
                 return self.dataset[elem].values
             try:
                 if self.dataset[elem].axis == 'X':
                     return self.dataset[elem].values
-                if self.dataset[elem].standard_name in ['lon', 'longitude', 'LONGITUDE', 'Longitude', 'x', 'X']:
+                if self.dataset[elem].name in ['lon', 'longitude', 'LONGITUDE', 'Longitude', 'x', 'X']:
                     return self.dataset[elem].values
                 if self.dataset[elem].units == 'degrees_east':
                     return self.dataset[elem].values
@@ -378,7 +363,7 @@ class NetCDFReader(object):
 
     def get_z(self):
 
-        for elem in (self.dataset.coords):
+        for elem in self.dataset.coords:
             if type(self.dataset[elem]) in ['numpy.datetime64', 'numpy.datetime32', 'datetime.datetime']:
                 return self.dataset[elem].values
 
