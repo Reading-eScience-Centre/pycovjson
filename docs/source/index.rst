@@ -13,8 +13,8 @@ Contents:
 
    introduction
    quickstart
+   installation
    cli/cli
-   core/main
    core/model
    core/convert
    core/read_netcdf

@@ -1,18 +1,25 @@
 .. # encoding: utf-8
 
-pycovjson model.py
-******************
+model.py
+********
 .. module:: pycovjson.model
 
 Coverage
 ========
 .. autoclass:: Coverage
-    :members:
+    :members: to_dict
+
 Domain
 ======
 .. autoclass:: Domain
     :members:
+
 Range
 =====
 .. autoclass:: Range
-    :members:
+    :members: __init__ , to_dict, populate
+
+TileSet
+=======
+.. autoclass:: TileSet
+    :members: 

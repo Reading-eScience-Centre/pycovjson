@@ -1,7 +1,11 @@
 .. # encoding: utf-8
    
-pycovjson write.py
-*******************
+write.py
+********
+.. module:: pycovjson.write
 
-.. autoclass:: write
+.. autoclass:: Writer
     :members:
+
+
+
