@@ -1,0 +1,6 @@
+name: pycovjson
+dependencies:
+  - python=3.5
+  - numpy=1.11
+  - netCDF4
+
