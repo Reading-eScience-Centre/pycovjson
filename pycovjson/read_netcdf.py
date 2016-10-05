@@ -181,7 +181,8 @@ class NetCDFReader(object):
 
     def get_dimensions(self, variable):
         """
-        Return dimension of specified variable
+        Return dimension of specified variable.
+
         :param variable: Input variable
         :return: Tuple - Array dimension of specified variable
         """
@@ -189,10 +190,12 @@ class NetCDFReader(object):
             var_dimension = self.dataset[variable].dims
             return var_dimension
         except:
-            return None
+            print("Error Occurred: No Dimensions detected... Exiting. ")
+            exit()
 
     def get_std_name(self, variable):
         """
+        Return standard name of variable.
 
         :param variable: input variable
         :return: standard_name
@@ -227,7 +230,7 @@ class NetCDFReader(object):
 
     def get_units(self, variable):
         """
-        Return
+        Return units of specified variable.
         :param variable:
         :return: units
         """
@@ -239,7 +242,7 @@ class NetCDFReader(object):
 
     def get_metadata(self, variable):
         """
-        Returns metadata for a specified variable
+        Returns metadata for a specified variable.
 
         :param variable: Name of specified
         :return: dset[variable]
@@ -248,9 +251,11 @@ class NetCDFReader(object):
 
     def get_var_group(self, variable):
         """
+        Return group which specified variable belongs to.
 
         :param variable:
-        :return: Group that specifed variable belongs to
+        :return: group as string
+        :type string
         """
         return self.dataset[variable].group()
 
@@ -275,12 +280,19 @@ class NetCDFReader(object):
             return axes_list
         except:
             print('Error in axes_dict')
+    def get_dims(self, variable):
+        try:
+            dims = self.dataset[variable].dims
+        except:
+            print("Error Occurred: No Dimensions detected... Exiting. ")
+            exit()
 
     def convert_time(self, t_variable):
         """
-        Formats time objects to CovJSON compliant strings
-        :param t_variable:
-        :return: list of datetime strings
+        Formats time objects to CovJSON compliant strings.
+
+        :param t_variable: Time Variable
+        :return: list of formatted datetime strings
         """
         date_list = []
         times = self.dataset[t_variable].values
@@ -300,8 +312,10 @@ class NetCDFReader(object):
 
     def extract_var_data(self, var_names):
         """
-        Returns dictionary containing the values in each variable specified in the variable list
-        :type var_names: object
+        Returns dictionary containing the values in each variable specified in the variable list.
+
+        :type var_names: String
+        :param var_names:
         :return variable_dict - Dictionary containing key-val pairs
         """
         variable_dict = {}  # Declaring dictionary used to store key-val pairs, var_name as key and the array as the value
@@ -328,6 +342,7 @@ class NetCDFReader(object):
                     axes_dict['z'] = coord
             except:
                 pass
+
             try:
                 if self.dataset[coord].units == 'degrees_north':
                     axes_dict['y'] = coord
@@ -335,6 +350,19 @@ class NetCDFReader(object):
                     axes_dict['x'] = coord
             except:
                 pass
+
+            try:
+                if self.dataset[coord].name.lower() == 'x':
+                    axes_dict['x'] = coord
+
+                if self.dataset[coord].name.lower() == 'y':
+                    axes_dict['y'] = coord
+
+                if self.dataset[coord].name.lower() == 'z':
+                    axes_dict['z'] = coord
+            except:
+                pass
+
             try:
                 if self.dataset[coord].positive in ['up', 'down']:
                     axes_dict['z'] = coord
@@ -343,11 +371,18 @@ class NetCDFReader(object):
 
             # if coord in x_list or self.dataset[coord].standard_name in x_list: axes_dict['x'] = coord
             # if coord in y_list or self.dataset[coord].standard_name in y_list: axes_dict['y'] = coord
+            try:
+                if coord in t_list or self.dataset[coord].standard_name  in t_list:
+                    axes_dict['t'] = coord
+                if coord in z_list or self.dataset[coord].standard_name in z_list:
+                    axes_dict['z'] = coord
+            except:
+                print("Error: DataArray does not include standard name.")
+                pass
 
-            if coord in t_list or self.dataset[coord].standard_name in t_list:
-                axes_dict['t'] = coord
-            if coord in z_list or self.dataset[coord].standard_name in z_list:
-                axes_dict['z'] = coord
+        if len(axes_dict) < 2:
+            print('Error: File does not conform to CF Conventions')
+            exit()
 
         return axes_dict
 
