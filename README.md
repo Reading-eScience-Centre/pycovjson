@@ -25,7 +25,7 @@ Command line interface:
 
 **[pycovjson-convert](https://github.com/Reading-eScience-Centre/pycovjson/blob/master/pycovjson/cli/convert.py)** accepts 6 parameters, and can be run as followed 
 ```
-$ python cli/convert.py -i *name of input file(NetCDF)* -o *name of output file* -v *variable* -r *range type* [-t] *tiled* [-s] *tile shape as list*
+$ pycovjson-convert -i *name of input file(NetCDF)* -o *name of output file* -v *variable* [-t] *tiled* [-s] *tile shape as list*
 ```
 
 On running the script, a CoverageJSON file will be generated.
