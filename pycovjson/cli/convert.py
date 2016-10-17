@@ -44,7 +44,6 @@ def main():
     interactive = args.interactive
 
     if interactive:
-        print(type(variable))
         axis = input('Which Axis?', Reader.get_axis(variable))
 
 
