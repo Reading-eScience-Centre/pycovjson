@@ -33,7 +33,7 @@ def main():
     parser.add_argument('-s', '--shape', nargs='+',
                         help='Tile shape, list', type=int)
     parser.add_argument('-v', dest='variable',
-                        help='Variable to populate coverage with')
+                        help='Variable to populate coverage with', required=True)
     parser.add_argument('-n', '--interactive', action='store_true', help='Enter interactive mode')
     args = parser.parse_args()
     inputfile = args.inputfile
