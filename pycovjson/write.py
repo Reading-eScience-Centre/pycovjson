@@ -12,11 +12,12 @@ class Writer(object):
     def __init__(self, output_name: object, dataset_path: object, vars_to_write: object, tiled=False, tile_shape=[]) -> object:
         """
         Writer class constructor
-        :param output_name: Name of output file
-        :param dataset_path: Path to dataset
-        :param vars_to_write: List of variables to write
-        :param tiled: Boolean value (default False)
-        :param tile_shape: List containing shape of tiles
+
+        :parameter output_name: Name of output file
+        :parameter dataset_path: Path to dataset
+        :parameter vars_to_write: List of variables to write
+        :parameter tiled: Boolean value (default False)
+        :parameter tile_shape: List containing shape of tiles
         """
         self.output_name = output_name
         self.dataset_path = dataset_path
@@ -118,43 +119,42 @@ class Writer(object):
        Construct range object
        :return: range
        """
-        # TODO iteration through variable list
-        variable = self.vars_to_write[0]
-        axis_names = list(map(str.lower, list(self.Reader.get_axis(variable))))
+        for variable in self.vars_to_write:
+            print("wrote variable:", variable)
 
-        if self.tiled:
-            # print(self.tile_shape)
+            axis_names = list(map(str.lower, list(self.Reader.get_axis(variable))))
 
-            tile_set_obj = TileSet(self.tile_shape, self.urlTemplate)
-            variable_type = self.Reader.get_type(variable)
-            variable_shape = self.Reader.get_shape(variable)
-            print('Variable shape:', variable_shape)
+            if self.tiled:
+                tile_set_obj = TileSet(self.tile_shape, self.urlTemplate)
+                variable_type = self.Reader.get_type(variable)
+                variable_shape = self.Reader.get_shape(variable)
+                print('Variable shape:', variable_shape)
 
-            count = 0
-            for tile in tile_set_obj.get_tiles(self.tile_shape, self.Reader.dataset[variable].values):
-                count += 1
-                range = {'ranges': Range('NdArray', data_type=variable_type, axes=tile[
-                                         1], shape=variable_shape, values=tile[0].flatten().tolist()).to_dict()}
-                self.save_covjson_range(range, str(count) + '.json')
-            url_template = tile_set_obj.generate_url_template(
-                axis_names=axis_names)
-            # tileset = TileSet(variable_shape, url_template).create_tileset()
-            tileset = [{'tileShape': [None, 173, 301],
-                        'urlTemplate': 'http://localhost:8080/{t}.covjson'}]
+                count = 0
+                for tile in tile_set_obj.get_tiles(self.tile_shape, self.Reader.dataset[variable].values):
+                    count += 1
+                    range = {'ranges': Range('NdArray', data_type=variable_type, axes=tile[
+                                             1], shape=variable_shape, values=tile[0].flatten().tolist()).to_dict()}
+                    self.save_covjson_range(range, str(count) + '.covjson')
+                url_template = tile_set_obj.generate_url_template(base_url='localhost:8080',
+                    axis_names=['t'])
+                tileset = TileSet(variable_shape, url_template).create_tileset(self.tile_shape)
+                # tileset = [{'tileShape': [None, 173, 301],
+                #             'urlTemplate': 'http://localhost:8080/{t}.covjson'}]
 
-            range = Range('TiledNdArray', data_type=variable_type,
-                          axes=axis_names, tile_sets=tileset, shape=variable_shape)
-            return range
-        else:
+                range = Range('TiledNdArray', data_type=variable_type, variable_name=variable,
+                              axes=axis_names, tile_sets=tileset, shape=variable_shape)
+                return range
+            else:
 
-            shape = self.Reader.get_shape(variable)
-            values = self.Reader.get_values(variable).flatten().tolist()
-            data_type = self.Reader.get_type(variable)
-            axes = self.Reader.get_axis(variable)
-            range = Range(range_type='NdArray',  data_type=data_type, values=values, shape=shape,
-                          variable_name=variable, axes=axis_names)
+                shape = self.Reader.get_shape(variable)
+                values = self.Reader.get_values(variable).flatten().tolist()
+                data_type = self.Reader.get_type(variable)
+                axes = self.Reader.get_axis(variable)
+                range = Range(range_type='NdArray',  data_type=data_type, values=values, shape=shape,
+                              variable_name=variable, axes=axis_names)
 
-            return range
+                return range
 
     # Adapted from
     # https://github.com/the-iea/ecem/blob/master/preprocess/ecem/util.py -
