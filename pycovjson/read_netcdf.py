@@ -265,7 +265,7 @@ class NetCDFReader(object):
             axis = list(map(str.lower, list(axis)))
             return axis
         except:
-            print('Error occured: Variable "' + variable + '" has no axis attribute')
+            print('Warning: Variable ' + str(variable) + ' has no axis attribute. ')
             pass
         try:
             axes_list = []
