@@ -97,3 +97,7 @@ ENV/
 /pycovjson/data/
 /pycovjson/writeJSON.py
 /pycovjson/test/testdata/jsont_template.json
+
+# Eclipse Pydev
+.project
+.pydevproject
