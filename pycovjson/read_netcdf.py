@@ -261,12 +261,8 @@ class NetCDFReader(object):
             axis = list(map(str.lower, list(axis)))
             return axis
         except:
-<<<<<<< HEAD
-            print('Warning: Variable ' + str(variable) + ' has no axis attribute. ')
-            pass
-=======
             print("Error occured: Variable '%s' has no axis attribute" % (variable))
->>>>>>> 1cf81ed12227447eddf8904627cad7ad9c40873d
+            pass
         try:
             axes_list = []
             axes_dict = self.get_axes()
@@ -362,13 +358,12 @@ class NetCDFReader(object):
             except:
                 pass
 
-<<<<<<< HEAD
             # if coord in x_list or self.dataset[coord].standard_name in x_list: axes_dict['x'] = coord
             # if coord in y_list or self.dataset[coord].standard_name in y_list: axes_dict['y'] = coord
             try:
-                if coord in t_list or self.dataset[coord].standard_name  in t_list:
+                if coord in t_list or self.dataset[coord].standard_name in t_list or self.dataset[coord].name in t_list:
                     axes_dict['t'] = coord
-                if coord in z_list or self.dataset[coord].standard_name in z_list:
+                if coord in z_list or self.dataset[coord].standard_name in z_list or self.dataset[coord].name in z_list:
                     axes_dict['z'] = coord
             except:
                 print("Error: DataArray does not include standard name.")
@@ -377,12 +372,6 @@ class NetCDFReader(object):
         if len(axes_dict) < 2:
             print('Error: File does not conform to CF Conventions')
             exit()
-=======
-            if coord in t_list or self.dataset[coord].name in t_list:
-                axes_dict['t'] = coord
-            if coord in z_list or self.dataset[coord].name in z_list:
-                axes_dict['z'] = coord
->>>>>>> 1cf81ed12227447eddf8904627cad7ad9c40873d
 
         return axes_dict
 
