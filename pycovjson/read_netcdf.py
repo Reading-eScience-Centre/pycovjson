@@ -276,6 +276,7 @@ class NetCDFReader(object):
             return axes_list
         except:
             print('Error in axes_dict')
+
     def get_dims(self, variable):
         try:
             dims = self.dataset[variable].dims
@@ -358,8 +359,6 @@ class NetCDFReader(object):
             except:
                 pass
 
-            # if coord in x_list or self.dataset[coord].standard_name in x_list: axes_dict['x'] = coord
-            # if coord in y_list or self.dataset[coord].standard_name in y_list: axes_dict['y'] = coord
             try:
                 if coord in t_list or self.dataset[coord].standard_name in t_list or self.dataset[coord].name in t_list:
                     axes_dict['t'] = coord
@@ -367,7 +366,6 @@ class NetCDFReader(object):
                     axes_dict['z'] = coord
             except:
                 print("Error: DataArray does not include standard name.")
-                pass
 
         if len(axes_dict) < 2:
             print('Error: File does not conform to CF Conventions')

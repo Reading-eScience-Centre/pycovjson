@@ -1,5 +1,4 @@
-
-from pycovjson.model import *
+from pycovjson.model import Coverage, Domain, Parameter, Range, Reference, SpatialReferenceSystem2d, SpatialReferenceSystem3d, TemporalReferenceSystem, TileSet
 from pycovjson.read_netcdf import NetCDFReader as Reader
 import time
 import json
@@ -23,14 +22,14 @@ class Writer(object):
         self.dataset_path = dataset_path
         self.tile_shape = tile_shape
         self.vars_to_write = vars_to_write
-        self.urlTemplate = 'localhost:8080/{t}.covjson'
+        self.url_template = 'localhost:8080/{t}.covjson'
         self.tiled = tiled
         if tiled:
             self.range_type = 'TiledNdArray'
         else:
             self.range_type = 'NdArray'
         self.dataset_path = dataset_path
-        self.Reader = Reader(dataset_path)
+        self.reader = Reader(dataset_path)
         self.axis_dict = self.Reader.get_axes()
         self.axis_list = list(self.axis_dict.keys())
         self.ref_list = []
@@ -55,7 +54,6 @@ class Writer(object):
         else:
             self._save_covjson(coverage, self.output_name)
 
-        pass
 
     def _construct_coverage(self):
         """
@@ -139,8 +137,6 @@ class Writer(object):
                 url_template = tile_set_obj.generate_url_template(base_url='localhost:8080',
                     axis_names=['t'])
                 tileset = TileSet(variable_shape, url_template).create_tileset(self.tile_shape)
-                # tileset = [{'tileShape': [None, 173, 301],
-                #             'urlTemplate': 'http://localhost:8080/{t}.covjson'}]
 
                 range = Range('TiledNdArray', data_type=variable_type, variable_name=variable,
                               axes=axis_names, tile_sets=tileset, shape=variable_shape)
@@ -159,6 +155,7 @@ class Writer(object):
     # Adapted from
     # https://github.com/the-iea/ecem/blob/master/preprocess/ecem/util.py -
     # letmaik
+    @staticmethod
     def _save_json(self, obj, path, **kw):
         """Save json object to disk"""
         with open(path, 'w') as fp:
@@ -167,7 +164,7 @@ class Writer(object):
             jsonstr = json.dumps(obj, fp, cls=CustomEncoder, **kw)
             fp.write(jsonstr)
             stop = time.clock()
-            print("Completed in: ", (stop - start), "seconds.")
+            print("Completed in: '%s' seconds." % (stop - start))
 
     def _save_covjson(self, obj, path):
         """
@@ -201,6 +198,7 @@ class Writer(object):
 
         self.save_json(obj, path, indent=2)
 
+    @staticmethod
     def save_json(self, obj, path, **kw):
         with open(path, 'w') as fp:
             print("Converting....")
@@ -208,7 +206,7 @@ class Writer(object):
             jsonstr = json.dumps(obj, fp, cls=CustomEncoder, **kw)
             fp.write(jsonstr)
             stop = time.clock()
-            print("Completed in: ", (stop - start), "seconds.")
+            print("Completed in: '%s' seconds." % (stop - start))
 
     def save_covjson_range(self, obj, path):
         for range in obj['ranges'].values():
@@ -216,10 +214,12 @@ class Writer(object):
             self.compact(range, 'values')
         self.save_json(obj, path, indent=2)
 
+    @staticmethod
     def compact(self, obj, *names):
         for name in names:
             obj[name] = Custom(obj[name], separators=(',', ':'))
 
+    @staticmethod
     def no_indent(self, obj, *names):
         for name in names:
             obj[name] = Custom(obj[name])
