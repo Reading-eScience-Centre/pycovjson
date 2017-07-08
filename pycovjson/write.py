@@ -30,7 +30,7 @@ class Writer(object):
             self.range_type = 'NdArray'
         self.dataset_path = dataset_path
         self.reader = Reader(dataset_path)
-        self.axis_dict = self.Reader.get_axes()
+        self.axis_dict = self.reader.get_axes()
         self.axis_list = list(self.axis_dict.keys())
         self.ref_list = []
         if 't' in self.axis_list and 'z' in self.axis_list:
@@ -71,18 +71,18 @@ class Writer(object):
         """
 
         domain_type = 'Grid'
-        x_values = self.Reader.get_x().flatten().tolist()
-        y_values = self.Reader.get_y().flatten().tolist()
+        x_values = self.reader.get_x().flatten().tolist()
+        y_values = self.reader.get_y().flatten().tolist()
         t_values = []
         z_values = []
 
         if 't' in self.axis_list:
 
-            t_values = self.Reader.get_t()
+            t_values = self.reader.get_t()
 
         if 'z' in self.axis_list:
 
-            z_values = self.Reader.get_z().flatten().tolist()
+            z_values = self.reader.get_z().flatten().tolist()
 
         domain = Domain(domain_type, x_values, y_values, z_values, t_values)
 
@@ -94,10 +94,10 @@ class Writer(object):
         :return: Parameter object
         """
         for variable in self.vars_to_write:
-            description = self.Reader.get_std_name(variable)
-            unit = self.Reader.get_units(variable)
-            symbol = self.Reader.dataset[variable].units
-            label = self.Reader.dataset[variable].long_name
+            description = self.reader.get_std_name(variable)
+            unit = self.reader.get_units(variable)
+            symbol = self.reader.dataset[variable].units
+            label = self.reader.dataset[variable].long_name
             params = Parameter(description=description, variable_name=variable,
                                symbol=symbol, unit=unit, observed_property=label)
 
@@ -120,16 +120,16 @@ class Writer(object):
         for variable in self.vars_to_write:
             print("wrote variable:", variable)
 
-            axis_names = list(map(str.lower, list(self.Reader.get_axis(variable))))
+            axis_names = list(map(str.lower, list(self.reader.get_axis(variable))))
 
             if self.tiled:
                 tile_set_obj = TileSet(self.tile_shape, self.urlTemplate)
-                variable_type = self.Reader.get_type(variable)
-                variable_shape = self.Reader.get_shape(variable)
+                variable_type = self.reader.get_type(variable)
+                variable_shape = self.reader.get_shape(variable)
                 print('Variable shape:', variable_shape)
 
                 count = 0
-                for tile in tile_set_obj.get_tiles(self.tile_shape, self.Reader.dataset[variable].values):
+                for tile in tile_set_obj.get_tiles(self.tile_shape, self.reader.dataset[variable].values):
                     count += 1
                     range = {'ranges': Range('NdArray', data_type=variable_type, axes=tile[
                                              1], shape=variable_shape, values=tile[0].flatten().tolist()).to_dict()}
@@ -143,10 +143,10 @@ class Writer(object):
                 return range
             else:
 
-                shape = self.Reader.get_shape(variable)
-                values = self.Reader.get_values(variable).flatten().tolist()
-                data_type = self.Reader.get_type(variable)
-                axes = self.Reader.get_axis(variable)
+                shape = self.reader.get_shape(variable)
+                values = self.reader.get_values(variable).flatten().tolist()
+                data_type = self.reader.get_type(variable)
+                axes = self.reader.get_axis(variable)
                 range = Range(range_type='NdArray',  data_type=data_type, values=values, shape=shape,
                               variable_name=variable, axes=axis_names)
 
@@ -155,7 +155,6 @@ class Writer(object):
     # Adapted from
     # https://github.com/the-iea/ecem/blob/master/preprocess/ecem/util.py -
     # letmaik
-    @staticmethod
     def _save_json(self, obj, path, **kw):
         """Save json object to disk"""
         with open(path, 'w') as fp:
@@ -198,7 +197,6 @@ class Writer(object):
 
         self.save_json(obj, path, indent=2)
 
-    @staticmethod
     def save_json(self, obj, path, **kw):
         with open(path, 'w') as fp:
             print("Converting....")
@@ -214,12 +212,10 @@ class Writer(object):
             self.compact(range, 'values')
         self.save_json(obj, path, indent=2)
 
-    @staticmethod
     def compact(self, obj, *names):
         for name in names:
             obj[name] = Custom(obj[name], separators=(',', ':'))
 
-    @staticmethod
     def no_indent(self, obj, *names):
         for name in names:
             obj[name] = Custom(obj[name])
