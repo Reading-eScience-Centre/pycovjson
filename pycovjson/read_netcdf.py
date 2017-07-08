@@ -261,8 +261,7 @@ class NetCDFReader(object):
             axis = list(map(str.lower, list(axis)))
             return axis
         except:
-            print("Error occured: Variable '%s' has no axis attribute" % (variable))
-            pass
+            print("Variable '%s' has no axis attribute, executing fallback for manual axis value detection." % (variable))
         try:
             axes_list = []
             axes_dict = self.get_axes()
@@ -272,7 +271,8 @@ class NetCDFReader(object):
                          list(axes_dict.values()).index(dim)])
 
                 axes_list.append(index)
-
+            
+            print("Manually detected axis as: '%s'" % (axes_list))
             return axes_list
         except:
             print('Error in axes_dict')
