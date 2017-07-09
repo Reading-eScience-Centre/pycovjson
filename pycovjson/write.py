@@ -118,7 +118,7 @@ class Writer(object):
        :return: range
        """
         for variable in self.vars_to_write:
-            print("wrote variable:", variable)
+            print("Constructing Range from variable:", variable)
 
             axis_names = list(map(str.lower, list(self.reader.get_axis(variable))))
 
