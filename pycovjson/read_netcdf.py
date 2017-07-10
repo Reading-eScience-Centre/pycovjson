@@ -365,7 +365,7 @@ class NetCDFReader(object):
                 if coord in z_list or self.dataset[coord].standard_name in z_list or self.dataset[coord].name in z_list:
                     axes_dict['z'] = coord
             except:
-                print("Error: DataArray does not include standard name.")
+                print("Error: DataArray does not include 'standard name' or 'name'.")
 
         if len(axes_dict) < 2:
             print('Error: File does not conform to CF Conventions')

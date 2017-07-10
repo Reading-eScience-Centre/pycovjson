@@ -19,7 +19,6 @@ class Writer(object):
         :parameter tile_shape: List containing shape of tiles
         """
         self.output_name = output_name
-        self.dataset_path = dataset_path
         self.tile_shape = tile_shape
         self.vars_to_write = vars_to_write
         self.url_template = 'localhost:8080/{t}.covjson'
@@ -131,26 +130,26 @@ class Writer(object):
                 count = 0
                 for tile in tile_set_obj.get_tiles(self.tile_shape, self.reader.dataset[variable].values):
                     count += 1
-                    range = {'ranges': Range('NdArray', data_type=variable_type, axes=tile[
+                    covrange = {'ranges': Range('NdArray', data_type=variable_type, axes=tile[
                                              1], shape=variable_shape, values=tile[0].flatten().tolist()).to_dict()}
-                    self.save_covjson_range(range, str(count) + '.covjson')
+                    self.save_covjson_range(covrange, str(count) + '.covjson')
                 url_template = tile_set_obj.generate_url_template(base_url='localhost:8080',
                     axis_names=['t'])
                 tileset = TileSet(variable_shape, url_template).create_tileset(self.tile_shape)
 
-                range = Range('TiledNdArray', data_type=variable_type, variable_name=variable,
+                covrange = Range('TiledNdArray', data_type=variable_type, variable_name=variable,
                               axes=axis_names, tile_sets=tileset, shape=variable_shape)
-                return range
+                return covrange
             else:
 
                 shape = self.reader.get_shape(variable)
                 values = self.reader.get_values(variable).flatten().tolist()
                 data_type = self.reader.get_type(variable)
                 axes = self.reader.get_axis(variable)
-                range = Range(range_type='NdArray',  data_type=data_type, values=values, shape=shape,
+                covrange = Range(range_type='NdArray',  data_type=data_type, values=values, shape=shape,
                               variable_name=variable, axes=axis_names)
 
-                return range
+                return covrange
 
     # Adapted from
     # https://github.com/the-iea/ecem/blob/master/preprocess/ecem/util.py -
@@ -177,9 +176,9 @@ class Writer(object):
             self.compact(axis, 'values')
         for ref in obj['domain']['referencing']:
             self.no_indent(ref, 'coordinates')
-        for range in obj['ranges'].values():
-            self.no_indent(range, 'axisNames', 'shape')
-            self.compact(range, 'values')
+        for covrange in obj['ranges'].values():
+            self.no_indent(covrange, 'axisNames', 'shape')
+            self.compact(covrange, 'values')
         self.save_json(obj, path, indent=2)
 
     def save_covjson_tiled(self, obj, path):
@@ -199,17 +198,17 @@ class Writer(object):
 
     def save_json(self, obj, path, **kw):
         with open(path, 'w') as fp:
-            print("Converting....")
+            print("Attempting to write CovJSON manifestation to '%s'" % (path))
             start = time.clock()
-            jsonstr = json.dumps(obj, fp, cls=CustomEncoder, **kw)
+            jsonstr = json.dumps(obj, cls=CustomEncoder, **kw)
             fp.write(jsonstr)
             stop = time.clock()
             print("Completed in: '%s' seconds." % (stop - start))
 
     def save_covjson_range(self, obj, path):
-        for range in obj['ranges'].values():
-            self.no_indent(range, 'axisNames', 'shape')
-            self.compact(range, 'values')
+        for covrange in obj['ranges'].values():
+            self.no_indent(covrange, 'axisNames', 'shape')
+            self.compact(covrange, 'values')
         self.save_json(obj, path, indent=2)
 
     def compact(self, obj, *names):
