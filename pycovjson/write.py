@@ -46,6 +46,8 @@ class Writer(object):
             self.ref_list.append(SpatialReferenceSystem2d())
         if endpoint_url is not None:
             self.endpoint_url = endpoint_url
+        else:
+            self.endpoint_url = None
 
     def write(self):
         """
@@ -206,7 +208,7 @@ class Writer(object):
         self.save_json(obj, resource, indent=2)
 
     def save_json(self, obj, resource, **kw):
-        print("Attempting to write CovJSON manifestation to '%s'" % (resource[0]))
+        print("Attempting to write CovJSON manifestation to '%s'" % (resource))
         start = time.clock()
         if resource[0].startswith('mongo'):
             mongo_client = MongoDBClient(obj, resource).write()

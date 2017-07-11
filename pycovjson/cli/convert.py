@@ -29,14 +29,14 @@ def main():
                         help='Name of input file', required=True)
     parser.add_argument('-o', '--output', dest='outputfile',
                         help='Name and location of output file', default='coverage.covjson')
-    parser.add_argument(
-        '-t', '--tiled', action='store_true', help='Apply tiling')
+    parser.add_argument('-t', '--tiled', action='store_true', help='Apply tiling')
     parser.add_argument('-s', '--shape', nargs='+',
                         help='Tile shape, list', type=int)
     parser.add_argument('-v', dest='variable',
                         help='Variable to populate coverage with', required=True)
     parser.add_argument('-n', '--interactive', action='store_true', help='Enter interactive mode')
-    parser.add_argument('-u', '--endpoint_url', dest='endpoint_url', nargs=1, help='MongoDB endpoint for CovJSON persistence')
+    parser.add_argument('-u', '--endpoint_url', dest='endpoint_url', nargs=1, 
+                        help='MongoDB endpoint for CovJSON persistence')
     args = parser.parse_args()
     inputfile = args.inputfile
     outputfile = args.outputfile
@@ -62,9 +62,8 @@ def main():
     if outputfile == None:
         outputfile = outputfile.default
 
-    if endpoint_url is not None:
-        Writer(outputfile, inputfile, [variable],
-               tiled=tiled, tile_shape=tile_shape, endpoint_url=endpoint_url).write()
+    Writer(outputfile, inputfile, [variable],
+           tiled=tiled, tile_shape=tile_shape, endpoint_url=endpoint_url).write()
 
 if __name__ == '__main__':
     main()
