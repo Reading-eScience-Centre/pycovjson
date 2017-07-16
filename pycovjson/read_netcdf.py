@@ -261,8 +261,7 @@ class NetCDFReader(object):
             axis = list(map(str.lower, list(axis)))
             return axis
         except:
-            print("Error occured: Variable '%s' has no axis attribute" % (variable))
-            pass
+            print("Variable '%s' has no axis attribute, executing fallback for manual axis value detection." % (variable))
         try:
             axes_list = []
             axes_dict = self.get_axes()
@@ -272,10 +271,12 @@ class NetCDFReader(object):
                          list(axes_dict.values()).index(dim)])
 
                 axes_list.append(index)
-
+            
+            print("Manually detected axis as: '%s'" % (axes_list))
             return axes_list
         except:
             print('Error in axes_dict')
+
     def get_dims(self, variable):
         try:
             dims = self.dataset[variable].dims
@@ -358,16 +359,13 @@ class NetCDFReader(object):
             except:
                 pass
 
-            # if coord in x_list or self.dataset[coord].standard_name in x_list: axes_dict['x'] = coord
-            # if coord in y_list or self.dataset[coord].standard_name in y_list: axes_dict['y'] = coord
             try:
                 if coord in t_list or self.dataset[coord].standard_name in t_list or self.dataset[coord].name in t_list:
                     axes_dict['t'] = coord
                 if coord in z_list or self.dataset[coord].standard_name in z_list or self.dataset[coord].name in z_list:
                     axes_dict['z'] = coord
             except:
-                print("Error: DataArray does not include standard name.")
-                pass
+                print("Error: DataArray does not include 'standard name' or 'name'.")
 
         if len(axes_dict) < 2:
             print('Error: File does not conform to CF Conventions')

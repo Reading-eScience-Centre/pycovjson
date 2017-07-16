@@ -46,8 +46,6 @@ def main():
     if interactive:
         axis = input('Which Axis?', Reader.get_axis(variable))
 
-
-
     if tiled and len(tile_shape) == 0:
         reader = Reader(inputfile)
         shape_list = reader.get_shape(variable)

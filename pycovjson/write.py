@@ -1,5 +1,4 @@
-
-from pycovjson.model import *
+from pycovjson.model import Coverage, Domain, Parameter, Range, Reference, SpatialReferenceSystem2d, SpatialReferenceSystem3d, TemporalReferenceSystem, TileSet
 from pycovjson.read_netcdf import NetCDFReader as Reader
 import time
 import json
@@ -20,18 +19,17 @@ class Writer(object):
         :parameter tile_shape: List containing shape of tiles
         """
         self.output_name = output_name
-        self.dataset_path = dataset_path
         self.tile_shape = tile_shape
         self.vars_to_write = vars_to_write
-        self.urlTemplate = 'localhost:8080/{t}.covjson'
+        self.url_template = 'localhost:8080/{t}.covjson'
         self.tiled = tiled
         if tiled:
             self.range_type = 'TiledNdArray'
         else:
             self.range_type = 'NdArray'
         self.dataset_path = dataset_path
-        self.Reader = Reader(dataset_path)
-        self.axis_dict = self.Reader.get_axes()
+        self.reader = Reader(dataset_path)
+        self.axis_dict = self.reader.get_axes()
         self.axis_list = list(self.axis_dict.keys())
         self.ref_list = []
         if 't' in self.axis_list and 'z' in self.axis_list:
@@ -55,7 +53,6 @@ class Writer(object):
         else:
             self._save_covjson(coverage, self.output_name)
 
-        pass
 
     def _construct_coverage(self):
         """
@@ -73,18 +70,18 @@ class Writer(object):
         """
 
         domain_type = 'Grid'
-        x_values = self.Reader.get_x().flatten().tolist()
-        y_values = self.Reader.get_y().flatten().tolist()
+        x_values = self.reader.get_x().flatten().tolist()
+        y_values = self.reader.get_y().flatten().tolist()
         t_values = []
         z_values = []
 
         if 't' in self.axis_list:
 
-            t_values = self.Reader.get_t()
+            t_values = self.reader.get_t()
 
         if 'z' in self.axis_list:
 
-            z_values = self.Reader.get_z().flatten().tolist()
+            z_values = self.reader.get_z().flatten().tolist()
 
         domain = Domain(domain_type, x_values, y_values, z_values, t_values)
 
@@ -96,10 +93,10 @@ class Writer(object):
         :return: Parameter object
         """
         for variable in self.vars_to_write:
-            description = self.Reader.get_std_name(variable)
-            unit = self.Reader.get_units(variable)
-            symbol = self.Reader.dataset[variable].units
-            label = self.Reader.dataset[variable].long_name
+            description = self.reader.get_std_name(variable)
+            unit = self.reader.get_units(variable)
+            symbol = self.reader.dataset[variable].units
+            label = self.reader.dataset[variable].long_name
             params = Parameter(description=description, variable_name=variable,
                                symbol=symbol, unit=unit, observed_property=label)
 
@@ -120,41 +117,39 @@ class Writer(object):
        :return: range
        """
         for variable in self.vars_to_write:
-            print("wrote variable:", variable)
+            print("Constructing Range from variable:", variable)
 
-            axis_names = list(map(str.lower, list(self.Reader.get_axis(variable))))
+            axis_names = list(map(str.lower, list(self.reader.get_axis(variable))))
 
             if self.tiled:
                 tile_set_obj = TileSet(self.tile_shape, self.urlTemplate)
-                variable_type = self.Reader.get_type(variable)
-                variable_shape = self.Reader.get_shape(variable)
+                variable_type = self.reader.get_type(variable)
+                variable_shape = self.reader.get_shape(variable)
                 print('Variable shape:', variable_shape)
 
                 count = 0
-                for tile in tile_set_obj.get_tiles(self.tile_shape, self.Reader.dataset[variable].values):
+                for tile in tile_set_obj.get_tiles(self.tile_shape, self.reader.dataset[variable].values):
                     count += 1
-                    range = {'ranges': Range('NdArray', data_type=variable_type, axes=tile[
+                    covrange = {'ranges': Range('NdArray', data_type=variable_type, axes=tile[
                                              1], shape=variable_shape, values=tile[0].flatten().tolist()).to_dict()}
-                    self.save_covjson_range(range, str(count) + '.covjson')
+                    self.save_covjson_range(covrange, str(count) + '.covjson')
                 url_template = tile_set_obj.generate_url_template(base_url='localhost:8080',
                     axis_names=['t'])
                 tileset = TileSet(variable_shape, url_template).create_tileset(self.tile_shape)
-                # tileset = [{'tileShape': [None, 173, 301],
-                #             'urlTemplate': 'http://localhost:8080/{t}.covjson'}]
 
-                range = Range('TiledNdArray', data_type=variable_type, variable_name=variable,
+                covrange = Range('TiledNdArray', data_type=variable_type, variable_name=variable,
                               axes=axis_names, tile_sets=tileset, shape=variable_shape)
-                return range
+                return covrange
             else:
 
-                shape = self.Reader.get_shape(variable)
-                values = self.Reader.get_values(variable).flatten().tolist()
-                data_type = self.Reader.get_type(variable)
-                axes = self.Reader.get_axis(variable)
-                range = Range(range_type='NdArray',  data_type=data_type, values=values, shape=shape,
+                shape = self.reader.get_shape(variable)
+                values = self.reader.get_values(variable).flatten().tolist()
+                data_type = self.reader.get_type(variable)
+                axes = self.reader.get_axis(variable)
+                covrange = Range(range_type='NdArray',  data_type=data_type, values=values, shape=shape,
                               variable_name=variable, axes=axis_names)
 
-                return range
+                return covrange
 
     # Adapted from
     # https://github.com/the-iea/ecem/blob/master/preprocess/ecem/util.py -
@@ -167,7 +162,7 @@ class Writer(object):
             jsonstr = json.dumps(obj, fp, cls=CustomEncoder, **kw)
             fp.write(jsonstr)
             stop = time.clock()
-            print("Completed in: ", (stop - start), "seconds.")
+            print("Completed in: '%s' seconds." % (stop - start))
 
     def _save_covjson(self, obj, path):
         """
@@ -181,9 +176,9 @@ class Writer(object):
             self.compact(axis, 'values')
         for ref in obj['domain']['referencing']:
             self.no_indent(ref, 'coordinates')
-        for range in obj['ranges'].values():
-            self.no_indent(range, 'axisNames', 'shape')
-            self.compact(range, 'values')
+        for covrange in obj['ranges'].values():
+            self.no_indent(covrange, 'axisNames', 'shape')
+            self.compact(covrange, 'values')
         self.save_json(obj, path, indent=2)
 
     def save_covjson_tiled(self, obj, path):
@@ -203,17 +198,17 @@ class Writer(object):
 
     def save_json(self, obj, path, **kw):
         with open(path, 'w') as fp:
-            print("Converting....")
+            print("Attempting to write CovJSON manifestation to '%s'" % (path))
             start = time.clock()
-            jsonstr = json.dumps(obj, fp, cls=CustomEncoder, **kw)
+            jsonstr = json.dumps(obj, cls=CustomEncoder, **kw)
             fp.write(jsonstr)
             stop = time.clock()
-            print("Completed in: ", (stop - start), "seconds.")
+            print("Completed in: '%s' seconds." % (stop - start))
 
     def save_covjson_range(self, obj, path):
-        for range in obj['ranges'].values():
-            self.no_indent(range, 'axisNames', 'shape')
-            self.compact(range, 'values')
+        for covrange in obj['ranges'].values():
+            self.no_indent(covrange, 'axisNames', 'shape')
+            self.compact(covrange, 'values')
         self.save_json(obj, path, indent=2)
 
     def compact(self, obj, *names):
