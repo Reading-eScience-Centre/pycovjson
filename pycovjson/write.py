@@ -1,14 +1,16 @@
 from pycovjson.model import Coverage, Domain, Parameter, Range, Reference, SpatialReferenceSystem2d, SpatialReferenceSystem3d, TemporalReferenceSystem, TileSet
 from pycovjson.read_netcdf import NetCDFReader as Reader
-import time
 import json
+from pymongo import MongoClient
+from pymongo.son_manipulator import SONManipulator
+import time
 import uuid
 
 
 class Writer(object):
     """Writer class"""
 
-    def __init__(self, output_name: object, dataset_path: object, vars_to_write: object, tiled=False, tile_shape=[]) -> object:
+    def __init__(self, output_name: object, dataset_path: object, vars_to_write: object, endpoint_url: object, tiled=False, tile_shape=[]) -> object:
         """
         Writer class constructor
 
@@ -17,6 +19,7 @@ class Writer(object):
         :parameter vars_to_write: List of variables to write
         :parameter tiled: Boolean value (default False)
         :parameter tile_shape: List containing shape of tiles
+        :parameter endpoint_url: MongoDB endpoint for CovJSON persistence
         """
         self.output_name = output_name
         self.tile_shape = tile_shape
@@ -41,18 +44,27 @@ class Writer(object):
             self.ref_list.append(SpatialReferenceSystem2d())
         elif 't' not in self.axis_list and 'z' not in self.axis_list:
             self.ref_list.append(SpatialReferenceSystem2d())
+        if endpoint_url is not None:
+            self.endpoint_url = endpoint_url
+        else:
+            self.endpoint_url = None
 
     def write(self):
         """
-        Writes Coverage object to disk
+        Writes Coverage object to local disk or MongoDB
         """
 
         coverage = self._construct_coverage()
-        if self.tiled:
-            self.save_covjson_tiled(coverage, self.output_name)
+        if self.endpoint_url is not None:
+            if self.tiled:
+                self.save_covjson_tiled(coverage, self.endpoint_url)
+            else:
+                self._save_covjson(coverage, self.endpoint_url)
         else:
-            self._save_covjson(coverage, self.output_name)
-
+            if self.tiled:
+                self.save_covjson_tiled(coverage, self.output_name)
+            else:
+                self._save_covjson(coverage, self.output_name)
 
     def _construct_coverage(self):
         """
@@ -164,11 +176,11 @@ class Writer(object):
             stop = time.clock()
             print("Completed in: '%s' seconds." % (stop - start))
 
-    def _save_covjson(self, obj, path):
+    def _save_covjson(self, obj, resource):
         """
         Skip indentation of certain fields to make JSON more compact but still human readable
-        :param obj:
-        :param path:
+        :param obj: the CovJSON object to write
+        :param resource: either a local file path or a MongoDB endpoint
 
         """
 
@@ -179,31 +191,33 @@ class Writer(object):
         for covrange in obj['ranges'].values():
             self.no_indent(covrange, 'axisNames', 'shape')
             self.compact(covrange, 'values')
-        self.save_json(obj, path, indent=2)
+        self.save_json(obj, resource, indent=2)
 
-    def save_covjson_tiled(self, obj, path):
+    def save_covjson_tiled(self, obj, resource):
         """
-              Skip indentation of certain fields to make JSON more compact but still human readable
-              :param obj:
-              :param path:
-
-              """
+        Skip indentation of certain fields to make JSON more compact but still human readable
+        :param obj: the CovJSON object to write
+        :param resource: either a local file path or a MongoDB endpoint
+        """
 
         for axis in obj['domain']['axes'].values():
             self.compact(axis, 'values')
         for ref in obj['domain']['referencing']:
             self.no_indent(ref, 'coordinates')
 
-        self.save_json(obj, path, indent=2)
+        self.save_json(obj, resource, indent=2)
 
-    def save_json(self, obj, path, **kw):
-        with open(path, 'w') as fp:
-            print("Attempting to write CovJSON manifestation to '%s'" % (path))
-            start = time.clock()
-            jsonstr = json.dumps(obj, cls=CustomEncoder, **kw)
-            fp.write(jsonstr)
-            stop = time.clock()
-            print("Completed in: '%s' seconds." % (stop - start))
+    def save_json(self, obj, resource, **kw):
+        print("Attempting to write CovJSON manifestation to '%s'" % (resource))
+        start = time.clock()
+        if resource[0].startswith('mongo'):
+            mongo_client = MongoDBClient(obj, resource).write()
+        else:
+            with open(resource, 'w') as fp:
+                jsonstr = json.dumps(obj, cls=CustomEncoder, **kw)
+                fp.write(jsonstr)
+        stop = time.clock()
+        print("Completed in: '%s' seconds." % (stop - start))
 
     def save_covjson_range(self, obj, path):
         for covrange in obj['ranges'].values():
@@ -248,3 +262,23 @@ class CustomEncoder(json.JSONEncoder):
         for k, v in self._replacement_map.items():
             result = result.replace('"@@%s@@"' % (k,), v)
         return result
+
+
+class MongoDBClient(object):
+    '''
+    A client for persisting CovJSON objects into MongoDB
+    '''
+    def __init__(self, covjson_obj, endpoint_url):
+        self.covjson_obj = covjson_obj
+        self.endpoint_url = endpoint_url
+    
+    def write(self):
+        """
+        Make the MongoDB connection, get/create a DB and/or a Collection 
+        and insert the CovJSON Document into MongoDB
+        """
+        client = MongoClient(self.endpoint_url)
+        db = client.covjson_db
+        covjson_collection = db.covjsons
+        covjson_collection.insert_one(json.loads(json.dumps(self.covjson_obj, cls=CustomEncoder)))
+
