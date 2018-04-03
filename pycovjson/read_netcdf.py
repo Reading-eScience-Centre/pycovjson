@@ -11,7 +11,7 @@ class NetCDFReader(object):
     def __init__(self, dataset_path):
         self.dataset_path = dataset_path
         try:
-            self.dataset = xr.open_dataset(self.dataset_path)
+            self.dataset = xr.open_dataset(self.dataset_path, decode_times=False)
 
         except OSError:
             print('File not found.')
@@ -19,7 +19,7 @@ class NetCDFReader(object):
 
     def read(self, file_path):
         self.file_path = file_path
-        self.dataset = xr.open_dataset(self.file_path)
+        self.dataset = xr.open_dataset(self.file_path, decode_times=False)
         self.var_names = self.get_var_names(self.dataset)
 
     def print(self):
@@ -27,7 +27,7 @@ class NetCDFReader(object):
         return self.dataset
 
     def get_xarray(self):
-        self.dataset = xr.open_dataset(self.dataset_path)
+        self.dataset = xr.open_dataset(self.dataset_path, decode_times=False)
         return self.dataset
 
     def close(self):
