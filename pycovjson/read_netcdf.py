@@ -5,21 +5,32 @@ import pandas as pd
 import numpy as np
 import re
 
+datetime_error = "Failed to decode times encoded in the standard NetCDF datetime format into datetime objects. Attempting less strict opening logic. Reason: "
+success_msg = "Successfully opened dataset with less strict logic."
 
 class NetCDFReader(object):
 
     def __init__(self, dataset_path):
         self.dataset_path = dataset_path
         try:
-            self.dataset = xr.open_dataset(self.dataset_path, decode_times=False)
-
+            try:
+                self.dataset = xr.open_dataset(self.dataset_path)
+            except ValueError as ve:
+                print(datetime_error, ve)
+                self.dataset = xr.open_dataset(self.dataset_path, decode_times=False)
+                print(success_msg)
         except OSError:
             print('File not found.')
             exit()
 
     def read(self, file_path):
         self.file_path = file_path
-        self.dataset = xr.open_dataset(self.file_path, decode_times=False)
+        try:
+            self.dataset = xr.open_dataset(self.file_path)
+        except ValueError as ve:
+            print(datetime_error, ve)
+            self.dataset = xr.open_dataset(self.file_path, decode_times=False)
+            print(success_msg)
         self.var_names = self.get_var_names(self.dataset)
 
     def print(self):
@@ -27,7 +38,12 @@ class NetCDFReader(object):
         return self.dataset
 
     def get_xarray(self):
-        self.dataset = xr.open_dataset(self.dataset_path, decode_times=False)
+        try:
+            self.dataset = xr.open_dataset(self.dataset_path)
+        except ValueError as ve:
+            print(datetime_error, ve)
+            self.dataset = xr.open_dataset(self.dataset_path, decode_times=False)
+            print(success_msg)
         return self.dataset
 
     def close(self):
