@@ -311,8 +311,11 @@ class NetCDFReader(object):
         times = self.dataset[t_variable].values
 
         for time in times:
-            time = pd.to_datetime(str(time))
-            date_list.append(time.strftime('%Y-%m-%dT%H:%M:%SZ'))
+            try:
+                time = pd.to_datetime(str(time))
+                date_list.append(time.strftime('%Y-%m-%dT%H:%M:%SZ'))
+            except ValueError as ve:
+                print("Error parsing and converting '%s' variable object to CovJSON compliant string."  % (t_variable), ve)
 
         return date_list
 
